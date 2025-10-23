@@ -64,17 +64,17 @@
         },
         theme: {
           // 背景相关
-          viewerBgColor: 'rgba(127, 127, 127, 0.95)',
+          viewerBgColor: 'rgba(0, 0, 0, 0.4)',
 
-          // 工具栏相关
-          toolbarBgColor: 'rgba(127, 127, 127, 0.85)',
+          // 工具栏相关（半透明浅灰，营造朦胧感）
+          toolbarBgColor: 'rgba(150, 150, 150, 0.7)',
           toolbarBorderRadius: '30px',
           toolbarPadding: '8px 12px',
           toolbarBottom: '20px',
 
-          // 按钮相关
-          buttonBgColor: 'rgba(127, 127, 127, 0.85)',
-          buttonHoverBg: 'rgba(255, 255, 255, 0.25)',
+          // 按钮相关（半透明中灰）
+          buttonBgColor: 'rgba(150, 150, 150, 0.7)',
+          buttonHoverBg: 'rgba(200, 200, 200, 0.4)',
           buttonSize: '50px',
           buttonFontSize: '20px',
           buttonBorderRadius: '50%',
@@ -84,8 +84,8 @@
           topCloseBtnTop: '20px',
           topCloseBtnRight: '20px',
 
-          // 信息栏相关
-          infoBgColor: 'rgba(127, 127, 127, 0.9)',
+          // 信息栏相关（半透明浅灰）
+          infoBgColor: 'rgba(150, 150, 150, 0.7)',
           infoBorderRadius: '12px',
           infoPadding: '10px 15px',
           infoFontSize: '13px',
@@ -93,7 +93,7 @@
           infoLeft: '20px',
 
           // 缩放指示器
-          zoomIndicatorBg: 'rgba(127, 127, 127, 0.9)',
+          zoomIndicatorBg: 'rgba(150, 150, 150, 0.7)',
           zoomIndicatorBorderRadius: '18px',
           zoomIndicatorPadding: '6px 12px',
           zoomIndicatorFontSize: '14px',
@@ -101,8 +101,8 @@
           zoomIndicatorLeft: '20px',
 
           // 通用
-          activeColor: '#4285f4',
-          textColor: '#ffffff',
+          activeColor: 'rgba(100, 150, 255, 0.8)',
+          textColor: 'rgba(255, 255, 255, 0.9)',
           shadowColor: 'rgba(0, 0, 0, 0.2)',
           transitionSpeed: '0.3s',
         },
