@@ -1,6 +1,16 @@
 # ImagesViewer 图片查看器
 
-一个功能丰富、响应式的图片查看器，支持缩放、旋转、导航等操作。[预览地址](https://ybchen292.github.io/images-viewer/)
+一个功能丰富、响应式的图片查看器，支持缩放、旋转、导航等操作。使用原生 javasciprt 写。不局限于框架使用。
+
+[gitee 地址](https://gitee.com/ybchen292/images-viewer) [github 地址](https://github.com/ybchen292/images-viewer)
+
+#### [预览地址](https://ybchen292.github.io/images-viewer/)
+
+## 预览图
+
+![PixPin_2025-10-24_15-10-10](https://img2024.cnblogs.com/blog/1486937/202510/1486937-20251024151318173-462290901.gif)
+
+![PixPin_2025-10-24_15-11-22](https://img2024.cnblogs.com/blog/1486937/202510/1486937-20251024151341473-890885709.gif)
 
 ## 特性
 
