@@ -1,4 +1,3 @@
-// image-viewer.js - 修复居中问题的版本
 (function (global, factory) {
   // UMD包装器，支持CommonJS、AMD和全局变量
   if (typeof exports === 'object' && typeof module !== 'undefined') {
@@ -9,7 +8,7 @@
     define([], factory);
   } else {
     // 浏览器全局环境
-    global.ImageViewer = factory();
+    global.ImagesViewer = factory();
   }
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
@@ -35,7 +34,7 @@
     };
   }
 
-  class ImageViewer {
+  class ImagesViewer {
     constructor(options) {
       // 默认配置
       this.defaultOptions = {
@@ -1798,6 +1797,5 @@
     }
   }
 
-  // 返回ImageViewer类
-  return ImageViewer;
+  return ImagesViewer;
 });

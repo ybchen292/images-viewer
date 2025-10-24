@@ -1,6 +1,6 @@
 {
   "name": "images-viewer-js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "image-viewer一个功能丰富的图片查看器，支持缩放、旋转、导航等操作。原生javascript实现。不局限于框架使用",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -29,9 +29,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ybchen292/image-viewer"
+    "url": "https://github.com/ybchen292/images-viewer"
   },
-  "homepage": "https://github.com/ybchen292/image-viewer",
+  "homepage": "https://github.com/ybchen292/images-viewer",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-node-resolve": "^15.0.0",

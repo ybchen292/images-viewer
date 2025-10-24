@@ -1,4 +1,4 @@
-# ImageViewer 图片查看器
+# ImagesViewer 图片查看器
 
 一个功能丰富、响应式的图片查看器，支持缩放、旋转、导航等操作。
 
@@ -17,6 +17,21 @@
 
 ## 安装和使用
 
+### 简单用法
+
+```javascript
+// 单张图片
+const viewer1 = new ImagesViewer('single-image.jpg');
+
+// 多张图片
+const viewer2 = new ImagesViewer({
+  images: ['img1.jpg', 'img2.jpg', 'img3.jpg'],
+});
+
+// 数组形式
+const viewer3 = new ImagesViewer(['img1.jpg', 'img2.jpg']);
+```
+
 ### npm
 
 ```html
@@ -25,9 +40,9 @@ npm install images-viewer-js
 
 <!-- vue 环境 -->
 <script>
-  import ImageViewer from 'images-viewer-js';
+  import ImagesViewer from 'images-viewer-js';
   // 使用
-  const viewer = new ImageViewer({
+  const viewer = new ImagesViewer({
     images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
   });
 </script>
@@ -40,8 +55,8 @@ npm install images-viewer-js
 <script src="image-viewer.js"></script>
 
 <script>
-  // 使用全局变量 ImageViewer
-  const viewer = new ImageViewer({
+  // 使用全局变量 ImagesViewer
+  const viewer = new ImagesViewer({
     images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
   });
 </script>
@@ -50,9 +65,9 @@ npm install images-viewer-js
 ### CommonJS/Node.js
 
 ```javascript
-const ImageViewer = require('./image-viewer');
+const ImagesViewer = require('./image-viewer');
 
-const viewer = new ImageViewer({
+const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
 });
 ```
@@ -60,8 +75,8 @@ const viewer = new ImageViewer({
 ### AMD
 
 ```javascript
-define(['image-viewer'], function (ImageViewer) {
-  const viewer = new ImageViewer({
+define(['image-viewer'], function (ImagesViewer) {
+  const viewer = new ImagesViewer({
     images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
   });
 });
@@ -72,7 +87,7 @@ define(['image-viewer'], function (ImageViewer) {
 ### 基本配置
 
 ```javascript
-const viewer = new ImageViewer({
+const viewer = new ImagesViewer({
   // 图片数组（必需）
   images: ['image1.jpg', 'image2.jpg'],
 
@@ -128,21 +143,6 @@ const viewer = new ImageViewer({
     // 更多主题配置...
   },
 });
-```
-
-### 简单用法
-
-```javascript
-// 单张图片
-const viewer1 = new ImageViewer('single-image.jpg');
-
-// 多张图片
-const viewer2 = new ImageViewer({
-  images: ['img1.jpg', 'img2.jpg', 'img3.jpg'],
-});
-
-// 数组形式
-const viewer3 = new ImageViewer(['img1.jpg', 'img2.jpg']);
 ```
 
 ## 方法
@@ -249,7 +249,7 @@ viewer.downloadImage();
 ### 自定义主题示例
 
 ```javascript
-const viewer = new ImageViewer({
+const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg'],
   theme: {
     viewerBgColor: 'rgba(0, 0, 0, 0.8)',
@@ -291,7 +291,7 @@ const viewer = new ImageViewer({
 <!DOCTYPE html>
 <html>
   <head>
-    <title>ImageViewer 示例</title>
+    <title>ImagesViewer 示例</title>
   </head>
   <body>
     <button onclick="openViewer()">查看图片</button>
@@ -299,7 +299,7 @@ const viewer = new ImageViewer({
     <script src="image-viewer.js"></script>
     <script>
       function openViewer() {
-        const viewer = new ImageViewer({
+        const viewer = new ImagesViewer({
           images: [
             'https://example.com/image1.jpg',
             'https://example.com/image2.jpg',
@@ -319,7 +319,7 @@ const viewer = new ImageViewer({
 ### 高级定制示例
 
 ```javascript
-const advancedViewer = new ImageViewer({
+const advancedViewer = new ImagesViewer({
   images: imageArray,
   buttons: {
     zoomIn: true,
