@@ -7,7 +7,6 @@ function getDefaultExportFromCjs (x) {
 var imageViewer = {exports: {}};
 
 (function (module, exports) {
-	// image-viewer.js - 修复居中问题的版本
 	(function (global, factory) {
 	  // UMD包装器，支持CommonJS、AMD和全局变量
 	  {
@@ -37,7 +36,7 @@ var imageViewer = {exports: {}};
 	    };
 	  }
 
-	  class ImageViewer {
+	  class ImagesViewer {
 	    constructor(options) {
 	      // 默认配置
 	      this.defaultOptions = {
@@ -197,7 +196,7 @@ var imageViewer = {exports: {}};
 	    // 注入CSS样式
 	    injectStyles() {
 	      const style = document.createElement('style');
-	      style.id = 'image-viewer-styles';
+	      style.id = 'images-viewer-styles';
 	      style.textContent = `
         :root {
           /* 背景相关变量 */
@@ -244,7 +243,7 @@ var imageViewer = {exports: {}};
           --transition-speed: ${this.options.theme.transitionSpeed};
         }
 
-        .image-viewer-container {
+        .images-viewer-container {
           position: fixed;
           top: 0;
           left: 0;
@@ -261,7 +260,7 @@ var imageViewer = {exports: {}};
         }
 
         /* 修复图片容器样式 - 确保居中 */
-        .image-viewer-image-container {
+        .images-viewer-image-container {
           position: absolute;
           top: 0;
           left: 0;
@@ -275,7 +274,7 @@ var imageViewer = {exports: {}};
         }
 
         /* 修复图片样式 - 确保居中 */
-        .image-viewer-image {
+        .images-viewer-image {
           position: relative;
           object-fit: contain;
           cursor: grab;
@@ -288,17 +287,17 @@ var imageViewer = {exports: {}};
           touch-action: none;
         }
 
-        .image-viewer-image.loaded {
+        .images-viewer-image.loaded {
           opacity: 1;
         }
 
-        .image-viewer-image.dragging {
+        .images-viewer-image.dragging {
           cursor: grabbing;
           transition: none;
         }
 
         /* 加载指示器 */
-        .image-viewer-loading {
+        .images-viewer-loading {
           position: absolute;
           top: 50%;
           left: 50%;
@@ -317,11 +316,11 @@ var imageViewer = {exports: {}};
           z-index: 3;
         }
 
-        .image-viewer-loading.active {
+        .images-viewer-loading.active {
           opacity: 1;
         }
 
-        .image-viewer-loading-spinner {
+        .images-viewer-loading-spinner {
           width: 40px;
           height: 40px;
           border: 4px solid rgba(255, 255, 255, 0.2);
@@ -337,7 +336,7 @@ var imageViewer = {exports: {}};
         }
 
         /* 右上角关闭按钮样式 */
-        .image-viewer-top-close-btn {
+        .images-viewer-top-close-btn {
           position: absolute;
           top: var(--top-close-btn-top);
           right: var(--top-close-btn-right);
@@ -358,13 +357,13 @@ var imageViewer = {exports: {}};
           box-shadow: 0 2px 8px var(--shadow-color);
         }
 
-        .image-viewer-top-close-btn:hover {
+        .images-viewer-top-close-btn:hover {
           background-color: rgba(255, 50, 50, 0.3);
           transform: scale(1.1);
         }
 
         /* 缩放指示器样式 */
-        .image-viewer-zoom-indicator {
+        .images-viewer-zoom-indicator {
           position: absolute;
           top: var(--zoom-indicator-top);
           left: var(--zoom-indicator-left);
@@ -382,7 +381,7 @@ var imageViewer = {exports: {}};
         }
 
         /* 信息栏样式 */
-        .image-viewer-image-info {
+        .images-viewer-image-info {
           position: absolute;
           top: var(--info-top);
           left: var(--info-left);
@@ -399,22 +398,22 @@ var imageViewer = {exports: {}};
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .image-viewer-image-info.visible {
+        .images-viewer-image-info.visible {
           display: block;
           animation: imageViewerFadeIn 0.3s ease;
         }
 
-        .image-viewer-image-info p {
+        .images-viewer-image-info p {
           margin: 4px 0;
           line-height: 1.4;
         }
 
-        .image-viewer-image-info .info-label {
+        .images-viewer-image-info .info-label {
           color: #ddd;
           margin-right: 5px;
         }
 
-        .image-viewer-shortcuts-title {
+        .images-viewer-shortcuts-title {
           margin-top: 10px;
           padding-top: 10px;
           border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -434,7 +433,7 @@ var imageViewer = {exports: {}};
         }
 
         /* 图片计数器 */
-        .image-viewer-image-counter {
+        .images-viewer-image-counter {
           position: absolute;
           top: 20px;
           left: 50%;
@@ -451,7 +450,7 @@ var imageViewer = {exports: {}};
         }
 
         /* 导航按钮 */
-        .image-viewer-nav-buttons {
+        .images-viewer-nav-buttons {
           position: absolute;
           top: 50%;
           left: 0;
@@ -464,7 +463,7 @@ var imageViewer = {exports: {}};
           padding: 0 10px;
         }
 
-        .image-viewer-nav-btn {
+        .images-viewer-nav-btn {
           width: var(--button-size);
           height: var(--button-size);
           border-radius: 50%;
@@ -484,20 +483,20 @@ var imageViewer = {exports: {}};
           z-index: 6;
         }
 
-        .image-viewer-nav-btn:hover {
+        .images-viewer-nav-btn:hover {
           background-color: var(--button-hover-bg);
           opacity: 1;
           transform: scale(1.1);
         }
 
-        .image-viewer-nav-btn:disabled {
+        .images-viewer-nav-btn:disabled {
           opacity: 0.3;
           cursor: not-allowed;
           transform: none;
         }
 
         /* 工具栏样式 */
-        .image-viewer-toolbar {
+        .images-viewer-toolbar {
           position: absolute;
           bottom: var(--toolbar-bottom);
           left: 50%;
@@ -519,11 +518,11 @@ var imageViewer = {exports: {}};
           -webkit-overflow-scrolling: touch;
         }
 
-        .image-viewer-toolbar::-webkit-scrollbar {
+        .images-viewer-toolbar::-webkit-scrollbar {
           display: none;
         }
 
-        .image-viewer-tool-btn {
+        .images-viewer-tool-btn {
           width: var(--button-size);
           height: var(--button-size);
           background-color: transparent;
@@ -540,26 +539,27 @@ var imageViewer = {exports: {}};
           border-radius: var(--button-border-radius);
           margin: 0 2px;
           z-index: 11;
+          line-height: 1;
         }
 
-        .image-viewer-tool-btn:hover {
+        .images-viewer-tool-btn:hover {
           background-color: var(--button-hover-bg);
           transform: translateY(-2px);
           box-shadow: 0 4px 10px var(--shadow-color);
         }
 
-        .image-viewer-tool-btn:active {
+        .images-viewer-tool-btn:active {
           background-color: rgba(255, 255, 255, 0.3);
           transform: translateY(0);
         }
 
-        .image-viewer-tool-btn:disabled {
+        .images-viewer-tool-btn:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
 
         /* 缩略图容器 */
-        .image-viewer-thumbnails-container {
+        .images-viewer-thumbnails-container {
           position: absolute;
           bottom: 90px;
           left: 50%;
@@ -580,11 +580,11 @@ var imageViewer = {exports: {}};
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .image-viewer-thumbnails-container::-webkit-scrollbar {
+        .images-viewer-thumbnails-container::-webkit-scrollbar {
           display: none;
         }
 
-        .image-viewer-thumbnail-item {
+        .images-viewer-thumbnail-item {
           width: 70px;
           height: 45px;
           border: 2px solid transparent;
@@ -596,83 +596,83 @@ var imageViewer = {exports: {}};
           z-index: 11;
         }
 
-        .image-viewer-thumbnail-item img {
+        .images-viewer-thumbnail-item img {
           width: 100%;
           height: 100%;
           object-fit: cover;
         }
 
-        .image-viewer-thumbnail-item.active {
+        .images-viewer-thumbnail-item.active {
           border-color: var(--active-color);
           transform: scale(1.05);
         }
 
-        .image-viewer-thumbnail-item:hover {
+        .images-viewer-thumbnail-item:hover {
           transform: scale(1.05);
         }
 
         @media (max-width: 768px) {
-          .image-viewer-tool-btn {
+          .images-viewer-tool-btn {
             width: 44px;
             height: 44px;
             font-size: 18px;
           }
 
-          .image-viewer-toolbar {
+          .images-viewer-toolbar {
             padding: 6px 8px;
             bottom: 15px;
             border-radius: 25px;
             max-width: 95%;
           }
 
-          .image-viewer-thumbnails-container {
+          .images-viewer-thumbnails-container {
             bottom: 80px;
             padding: 8px 10px;
             gap: 8px;
             max-width: 95%;
           }
 
-          .image-viewer-thumbnail-item {
+          .images-viewer-thumbnail-item {
             width: 60px;
             height: 40px;
           }
 
-          .image-viewer-nav-btn {
+          .images-viewer-nav-btn {
             width: 44px;
             height: 44px;
             font-size: 20px;
           }
 
-          .image-viewer-top-close-btn {
+          .images-viewer-top-close-btn {
             width: 40px;
             height: 40px;
             top: 15px;
             right: 15px;
           }
 
-          .image-viewer-image-info {
+          .images-viewer-image-info {
             font-size: 12px;
             padding: 8px 12px;
           }
 
-          .image-viewer-zoom-indicator,
-          .image-viewer-image-counter {
+          .images-viewer-zoom-indicator,
+          .images-viewer-image-counter {
             font-size: 12px;
           }
         }
 
         @media (max-width: 480px) {
-          .image-viewer-thumbnails-container {
+          .images-viewer-thumbnails-container {
             max-width: 95%;
             padding: 6px 8px;
           }
 
-          .image-viewer-thumbnail-item {
+          .images-viewer-thumbnail-item {
             width: 50px;
             height: 35px;
           }
 
-          .image-viewer-toolbar {
+          .images-viewer-toolbar {
             max-width: 95%;
           }
         }
@@ -684,26 +684,26 @@ var imageViewer = {exports: {}};
 	    createOptimizedElements() {
 	      // 主容器
 	      this.container = document.createElement('div');
-	      this.container.className = 'image-viewer-container';
+	      this.container.className = 'images-viewer-container';
 	      document.body.appendChild(this.container);
 
 	      // 图片容器 - 使用flex确保居中
 	      this.imageContainer = document.createElement('div');
-	      this.imageContainer.className = 'image-viewer-image-container';
+	      this.imageContainer.className = 'images-viewer-image-container';
 	      this.container.appendChild(this.imageContainer);
 
 	      // 图片元素
 	      this.image = document.createElement('img');
-	      this.image.className = 'image-viewer-image';
+	      this.image.className = 'images-viewer-image';
 	      this.image.alt = '预览图片';
 	      this.image.crossOrigin = 'anonymous';
 	      this.imageContainer.appendChild(this.image);
 
 	      // 加载指示器
 	      this.loading = document.createElement('div');
-	      this.loading.className = 'image-viewer-loading';
+	      this.loading.className = 'images-viewer-loading';
 	      this.loading.innerHTML = `
-        <div class="image-viewer-loading-spinner"></div>
+        <div class="images-viewer-loading-spinner"></div>
         <div>加载中...</div>
       `;
 	      this.imageContainer.appendChild(this.loading);
@@ -711,7 +711,7 @@ var imageViewer = {exports: {}};
 	      // 右上角关闭按钮
 	      if (this.options.buttons.topClose) {
 	        this.topCloseBtn = document.createElement('button');
-	        this.topCloseBtn.className = 'image-viewer-top-close-btn';
+	        this.topCloseBtn.className = 'images-viewer-top-close-btn';
 	        this.topCloseBtn.textContent = '×';
 	        this.topCloseBtn.title = '关闭预览 (ESC)';
 	        this.container.appendChild(this.topCloseBtn);
@@ -719,20 +719,20 @@ var imageViewer = {exports: {}};
 
 	      // 缩放比例显示元素
 	      this.zoomIndicator = document.createElement('div');
-	      this.zoomIndicator.className = 'image-viewer-zoom-indicator';
+	      this.zoomIndicator.className = 'images-viewer-zoom-indicator';
 	      this.container.appendChild(this.zoomIndicator);
 
 	      // 图片信息面板
 	      if (this.options.buttons.info) {
 	        this.imageInfoPanel = document.createElement('div');
-	        this.imageInfoPanel.className = `image-viewer-image-info ${this.imageInfoVisible ? 'visible' : ''}`;
+	        this.imageInfoPanel.className = `images-viewer-image-info ${this.imageInfoVisible ? 'visible' : ''}`;
 	        this.container.appendChild(this.imageInfoPanel);
 	      }
 
 	      // 图片计数器
 	      if (this.images.length > 1) {
 	        this.counter = document.createElement('div');
-	        this.counter.className = 'image-viewer-image-counter';
+	        this.counter.className = 'images-viewer-image-counter';
 	        this.container.appendChild(this.counter);
 	      }
 
@@ -753,7 +753,7 @@ var imageViewer = {exports: {}};
 	    // 创建导航按钮
 	    createNavButtons() {
 	      const navContainer = document.createElement('div');
-	      navContainer.className = 'image-viewer-nav-buttons';
+	      navContainer.className = 'images-viewer-nav-buttons';
 
 	      navContainer.addEventListener('click', e => {
 	        e.stopPropagation();
@@ -761,7 +761,7 @@ var imageViewer = {exports: {}};
 
 	      if (this.options.buttons.prev) {
 	        this.prevBtn = document.createElement('button');
-	        this.prevBtn.className = 'image-viewer-nav-btn image-viewer-prev-btn';
+	        this.prevBtn.className = 'images-viewer-nav-btn images-viewer-prev-btn';
 	        this.prevBtn.textContent = '←';
 	        this.prevBtn.title = '上一张 (←)';
 	        this.prevBtn.addEventListener('click', e => {
@@ -773,7 +773,7 @@ var imageViewer = {exports: {}};
 
 	      if (this.options.buttons.next) {
 	        this.nextBtn = document.createElement('button');
-	        this.nextBtn.className = 'image-viewer-nav-btn image-viewer-next-btn';
+	        this.nextBtn.className = 'images-viewer-nav-btn images-viewer-next-btn';
 	        this.nextBtn.textContent = '→';
 	        this.nextBtn.title = '下一张 (→)';
 	        this.nextBtn.addEventListener('click', e => {
@@ -789,7 +789,7 @@ var imageViewer = {exports: {}};
 	    // 创建工具栏
 	    createToolbar() {
 	      const toolbar = document.createElement('div');
-	      toolbar.className = 'image-viewer-toolbar';
+	      toolbar.className = 'images-viewer-toolbar';
 
 	      toolbar.addEventListener('click', e => {
 	        e.stopPropagation();
@@ -806,11 +806,6 @@ var imageViewer = {exports: {}};
 	          this.toolbarNextBtn = this.createToolButton('→', () => this.nextImage());
 	          toolbar.appendChild(this.toolbarNextBtn);
 	        }
-
-	        const separator = document.createElement('div');
-	        separator.style.width = '10px';
-	        separator.style.flexShrink = '0';
-	        toolbar.appendChild(separator);
 	      }
 
 	      // 缩放按钮
@@ -852,7 +847,7 @@ var imageViewer = {exports: {}};
 	      }
 
 	      if (this.options.buttons.download) {
-	        this.downloadBtn = this.createToolButton('↓', () => this.downloadImage());
+	        this.downloadBtn = this.createToolButton('↡', () => this.downloadImage());
 	        toolbar.appendChild(this.downloadBtn);
 	      }
 
@@ -872,7 +867,7 @@ var imageViewer = {exports: {}};
 	    // 创建工具按钮
 	    createToolButton(icon, onClick) {
 	      const button = document.createElement('button');
-	      button.className = 'image-viewer-tool-btn';
+	      button.className = 'images-viewer-tool-btn';
 
 	      const iconSpan = document.createElement('span');
 	      iconSpan.textContent = icon;
@@ -890,7 +885,7 @@ var imageViewer = {exports: {}};
 	    // 创建缩略图
 	    createThumbnails() {
 	      const thumbContainer = document.createElement('div');
-	      thumbContainer.className = 'image-viewer-thumbnails-container';
+	      thumbContainer.className = 'images-viewer-thumbnails-container';
 
 	      thumbContainer.addEventListener('click', e => {
 	        e.stopPropagation();
@@ -898,7 +893,7 @@ var imageViewer = {exports: {}};
 
 	      this.images.forEach((url, index) => {
 	        const thumbItem = document.createElement('div');
-	        thumbItem.className = `image-viewer-thumbnail-item ${index === 0 ? 'active' : ''}`;
+	        thumbItem.className = `images-viewer-thumbnail-item ${index === 0 ? 'active' : ''}`;
 	        thumbItem.dataset.index = index;
 
 	        const thumbImg = document.createElement('img');
@@ -1128,7 +1123,7 @@ var imageViewer = {exports: {}};
 	      }
 
 	      infoHtml += `
-        <div class="image-viewer-shortcuts-title">快捷键</div>
+        <div class="images-viewer-shortcuts-title">快捷键</div>
         <p><span class="info-label">放大:</span> + / =</p>
         <p><span class="info-label">缩小:</span> -</p>
         <p><span class="info-label">上一张:</span> ←</p>
@@ -1168,11 +1163,11 @@ var imageViewer = {exports: {}};
 	    updateThumbnails() {
 	      if (this.images.length <= 1) return;
 
-	      document.querySelectorAll('.image-viewer-thumbnail-item').forEach(item => {
+	      document.querySelectorAll('.images-viewer-thumbnail-item').forEach(item => {
 	        item.classList.remove('active');
 	      });
 
-	      const activeItem = document.querySelector(`.image-viewer-thumbnail-item[data-index="${this.currentIndex}"]`);
+	      const activeItem = document.querySelector(`.images-viewer-thumbnail-item[data-index="${this.currentIndex}"]`);
 	      if (activeItem) {
 	        activeItem.classList.add('active');
 	        activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
@@ -1260,7 +1255,7 @@ var imageViewer = {exports: {}};
 	    }
 
 	    rotatePoint(x, y, angleDegrees) {
-	      const angle = (angleDegrees * Math.PI) / 180;
+	      const angle = angleDegrees * Math.PI;
 	      const cos = Math.cos(angle);
 	      const sin = Math.sin(angle);
 	      return {
@@ -1298,6 +1293,28 @@ var imageViewer = {exports: {}};
 	        this.updateImageTransform();
 	        e.preventDefault();
 	      });
+
+	      // this.addEvent(document, 'mousemove', e => {
+	      //   if (!this.isDragging) return;
+
+	      //   const deltaX = e.clientX - this.startX;
+	      //   const deltaY = e.clientY - this.startY;
+
+	      //   // 修复：根据旋转角度正确计算拖拽方向
+	      //   const angleRad = this.rotation * Math.PI;
+
+	      //   // 直接应用旋转矩阵到拖拽向量
+	      //   const rotatedDeltaX = deltaX * Math.cos(angleRad) - deltaY * Math.sin(angleRad);
+	      //   console.log('🚀 ~ rotatedDeltaX:', rotatedDeltaX);
+	      //   const rotatedDeltaY = deltaX * Math.sin(angleRad) + deltaY * Math.cos(angleRad);
+	      //   console.log('🚀 ~ rotatedDeltaY:', rotatedDeltaY);
+
+	      //   this.translateX = this.startTranslateX + rotatedDeltaX;
+	      //   this.translateY = this.startTranslateY + rotatedDeltaY;
+
+	      //   this.updateImageTransform();
+	      //   e.preventDefault();
+	      // });
 
 	      // 鼠标释放
 	      this.addEvent(document, 'mouseup', () => {
@@ -1793,15 +1810,14 @@ var imageViewer = {exports: {}};
 	      this.container.style.opacity = '0';
 	      setTimeout(() => {
 	        this.container.style.display = 'none';
-	        const styles = document.getElementById('image-viewer-styles');
+	        const styles = document.getElementById('images-viewer-styles');
 	        if (styles) styles.remove();
 	        if (this.container) this.container.remove();
 	      }, 300);
 	    }
 	  }
 
-	  // 返回ImageViewer类
-	  return ImageViewer;
+	  return ImagesViewer;
 	}); 
 } (imageViewer));
 

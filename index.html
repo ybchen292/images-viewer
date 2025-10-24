@@ -6,24 +6,21 @@
     <title>图片查看器示例</title>
   </head>
   <body>
-    <button id="openViewer">打开图片查看器</button>
+    <button id="openViewer">单图预览</button>
+    <button id="openViewer2">多图预览</button>
 
     <script src="index.js"></script>
     <script>
       document.getElementById('openViewer').addEventListener('click', function () {
+        const viewer = new ImagesViewer('https://picsum.photos/id/237/800/600');
+      });
+      document.getElementById('openViewer2').addEventListener('click', function () {
         const viewer = new ImagesViewer({
           images: [
             'https://picsum.photos/id/237/800/600',
             'https://picsum.photos/id/10/1200/800',
             'https://picsum.photos/id/1005/1600/900',
           ],
-          // theme: {
-          //   // 自定义主题
-          //   viewerBgColor: 'rgba(0, 0, 0, 0.9)',
-          //   toolbarBgColor: 'rgba(0, 0, 0, 0.7)',
-          //   activeColor: '#ff5722',
-          //   buttonSize: '44px',
-          // },
         });
       });
     </script>
