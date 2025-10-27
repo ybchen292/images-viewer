@@ -56,7 +56,7 @@ npm install images-viewer-js
 
 ```html
 <!-- 引入脚本 -->
-<script src="image-viewer.js"></script>
+<script src="images-viewer.js"></script>
 
 <script>
   // 使用全局变量 ImagesViewer
@@ -69,7 +69,7 @@ npm install images-viewer-js
 ### CommonJS/Node.js
 
 ```javascript
-const ImagesViewer = require('./image-viewer');
+const ImagesViewer = require('./images-viewer-js');
 
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
@@ -79,7 +79,7 @@ const viewer = new ImagesViewer({
 ### AMD
 
 ```javascript
-define(['image-viewer'], function (ImagesViewer) {
+define(['images-viewer-js'], function (ImagesViewer) {
   const viewer = new ImagesViewer({
     images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
   });
@@ -128,23 +128,48 @@ const viewer = new ImagesViewer({
 
   // 主题配置
   theme: {
-    // 背景颜色
+    // 背景相关
     viewerBgColor: 'rgba(0, 0, 0, 0.4)',
 
-    // 工具栏样式
+    // 工具栏相关
     toolbarBgColor: 'rgba(150, 150, 150, 0.7)',
     toolbarBorderRadius: '30px',
     toolbarPadding: '8px 12px',
     toolbarBottom: '20px',
 
-    // 按钮样式
+    // 按钮相关（半透明中灰）
     buttonBgColor: 'rgba(150, 150, 150, 0.7)',
     buttonHoverBg: 'rgba(200, 200, 200, 0.4)',
     buttonSize: '50px',
     buttonFontSize: '20px',
     buttonBorderRadius: '50%',
 
-    // 更多主题配置...
+    // 右上角关闭按钮
+    topCloseBtnSize: '44px',
+    topCloseBtnTop: '20px',
+    topCloseBtnRight: '20px',
+
+    // 信息栏相关（半透明浅灰）
+    infoBgColor: 'rgba(150, 150, 150, 0.7)',
+    infoBorderRadius: '12px',
+    infoPadding: '10px 15px',
+    infoFontSize: '13px',
+    infoTop: '70px',
+    infoLeft: '20px',
+
+    // 缩放指示器
+    zoomIndicatorBg: 'rgba(150, 150, 150, 0.7)',
+    zoomIndicatorBorderRadius: '18px',
+    zoomIndicatorPadding: '6px 12px',
+    zoomIndicatorFontSize: '14px',
+    zoomIndicatorTop: '20px',
+    zoomIndicatorLeft: '20px',
+
+    // 通用
+    activeColor: 'rgba(100, 150, 255, 0.8)',
+    textColor: 'rgba(255, 255, 255, 0.9)',
+    shadowColor: 'rgba(0, 0, 0, 0.2)',
+    transitionSpeed: '0.3s',
   },
 });
 ```
@@ -223,34 +248,12 @@ viewer.downloadImage();
 - **拖动**: 按住鼠标左键拖动图片
 - **缩放**: 鼠标滚轮
 - **双击**: 切换缩放状态
-- **右键**: 无操作（避免上下文菜单）
 
 ### 触摸操作
 
 - **单指拖动**: 移动图片
 - **双指捏合**: 缩放图片
 - **双击**: 切换缩放状态
-
-## 主题定制
-
-### CSS 变量
-
-查看器使用 CSS 变量进行样式定制，可以通过主题配置修改：
-
-```css
-:root {
-  --viewer-bg-color: rgba(0, 0, 0, 0.4);
-  --toolbar-bg-color: rgba(150, 150, 150, 0.7);
-  --button-bg-color: rgba(150, 150, 150, 0.7);
-  --button-hover-bg: rgba(200, 200, 200, 0.4);
-  --text-color: rgba(255, 255, 255, 0.9);
-  --active-color: rgba(100, 150, 255, 0.8);
-  --shadow-color: rgba(0, 0, 0, 0.2);
-  --transition-speed: 0.3s;
-}
-```
-
-### 自定义主题示例
 
 ```javascript
 const viewer = new ImagesViewer({
@@ -281,12 +284,6 @@ const viewer = new ImagesViewer({
 - Safari 12+
 - Edge 79+
 
-## 注意事项
-
-1. **跨域图片**: 对于跨域图片，下载功能可能受限
-2. **大图片**: 建议对超大图片进行适当压缩
-3. **性能**: 大量图片时建议使用缩略图预加载
-
 ## 示例
 
 ### 基本示例
@@ -300,7 +297,7 @@ const viewer = new ImagesViewer({
   <body>
     <button onclick="openViewer()">查看图片</button>
 
-    <script src="image-viewer.js"></script>
+    <script src="images-viewer.js"></script>
     <script>
       function openViewer() {
         const viewer = new ImagesViewer({
@@ -323,7 +320,7 @@ const viewer = new ImagesViewer({
 ### 高级定制示例
 
 ```javascript
-const advancedViewer = new ImagesViewer({
+const viewer = new ImagesViewer({
   images: imageArray,
   buttons: {
     zoomIn: true,

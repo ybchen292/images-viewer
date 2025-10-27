@@ -10,7 +10,7 @@
 		return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
 	}
 
-	var imageViewer = {exports: {}};
+	var imagesViewer = {exports: {}};
 
 	(function (module, exports) {
 		(function (global, factory) {
@@ -1825,10 +1825,10 @@
 
 		  return ImagesViewer;
 		}); 
-	} (imageViewer));
+	} (imagesViewer));
 
-	var imageViewerExports = imageViewer.exports;
-	var index = /*@__PURE__*/getDefaultExportFromCjs(imageViewerExports);
+	var imagesViewerExports = imagesViewer.exports;
+	var index = /*@__PURE__*/getDefaultExportFromCjs(imagesViewerExports);
 
 	return index;
 
