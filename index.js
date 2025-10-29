@@ -175,7 +175,7 @@
       // 注入CSS样式
       this.injectStyles();
 
-      // 创建优化的DOM元素
+      // 创建DOM元素
       this.createOptimizedElements();
 
       // 绑定事件
@@ -254,6 +254,11 @@
           -webkit-user-select: none;
           user-select: none;
           display: none;
+          background-color: var(--viewer-bg-color) ;
+        }
+
+        .images-viewer-container::backdrop,
+        .images-viewer-container:fullscreen {
           background-color: var(--viewer-bg-color);
         }
 
@@ -685,7 +690,7 @@
       this.container.className = 'images-viewer-container';
       document.body.appendChild(this.container);
 
-      // 图片容器 - 使用flex确保居中
+      // 图片容器
       this.imageContainer = document.createElement('div');
       this.imageContainer.className = 'images-viewer-image-container';
       this.container.appendChild(this.imageContainer);
@@ -764,7 +769,7 @@
         this.prevBtn.title = '上一张 (←)';
         this.prevBtn.addEventListener('click', e => {
           e.stopPropagation();
-          this.prevImage();
+          this.prev();
         });
         navContainer.appendChild(this.prevBtn);
       }
@@ -776,7 +781,7 @@
         this.nextBtn.title = '下一张 (→)';
         this.nextBtn.addEventListener('click', e => {
           e.stopPropagation();
-          this.nextImage();
+          this.next();
         });
         navContainer.appendChild(this.nextBtn);
       }
@@ -796,12 +801,12 @@
       // 导航按钮
       if (this.images.length > 1) {
         if (this.options.buttons.prev) {
-          this.toolbarPrevBtn = this.createToolButton('←', () => this.prevImage());
+          this.toolbarPrevBtn = this.createToolButton('←', () => this.prev());
           toolbar.appendChild(this.toolbarPrevBtn);
         }
 
         if (this.options.buttons.next) {
-          this.toolbarNextBtn = this.createToolButton('→', () => this.nextImage());
+          this.toolbarNextBtn = this.createToolButton('→', () => this.next());
           toolbar.appendChild(this.toolbarNextBtn);
         }
       }
@@ -830,7 +835,7 @@
 
       // 其他功能按钮
       if (this.options.buttons.reset) {
-        this.resetBtn = this.createToolButton('⟳', () => this.resetTransform());
+        this.resetBtn = this.createToolButton('⟳', () => this.reset());
         toolbar.appendChild(this.resetBtn);
       }
 
@@ -857,6 +862,13 @@
       if (this.options.buttons.close) {
         this.closeBtn = this.createToolButton('×', () => this.close());
         toolbar.appendChild(this.closeBtn);
+      }
+
+      // 自定义按钮[[按钮1,回调1],[按钮2,回调2]]
+      if (this.options.customButtons) {
+        this.options.customButtons.forEach(btn => {
+          toolbar.appendChild(this.createToolButton(btn[0], btn[1]));
+        });
       }
 
       this.container.appendChild(toolbar);
@@ -1016,7 +1028,10 @@
       }
     }
 
-    loadCurrentImage() {
+    loadCurrentImage(index) {
+      if (index !== undefined) {
+        this.currentIndex = index;
+      }
       const currentUrl = this.images[this.currentIndex];
       const isLoaded = this.loadedImages.has(currentUrl);
 
@@ -1042,8 +1057,6 @@
 
       // 如果图片已加载，直接显示
       if (isLoaded) {
-        // this.showLoading();
-
         const cachedImg = this.loadedImages.get(currentUrl);
         const tempImg = new Image();
         tempImg.crossOrigin = 'anonymous';
@@ -1058,10 +1071,6 @@
             this.fitImageToScreen(metadata.width, metadata.height);
             this.updateImageInfo();
           }
-
-          setTimeout(() => {
-            this.hideLoading();
-          }, 300);
         };
 
         return;
@@ -1088,9 +1097,7 @@
         this.fitImageToScreen(tempImg.width, tempImg.height);
         this.updateImageInfo();
 
-        setTimeout(() => {
-          this.hideLoading();
-        }, 300);
+        this.hideLoading();
       };
 
       tempImg.onerror = () => {
@@ -1117,13 +1124,13 @@
       }
 
       if (this.options.imageInfo.showDimensions) {
-        infoHtml += `<p><span class="info-label">尺寸:</span> ${metadata.width} × ${metadata.height} px</p>`;
+        infoHtml += `<p><span class="info-label">尺寸:</span> ${metadata.width} × ${metadata.height}</p>`;
       }
 
       infoHtml += `
         <div class="images-viewer-shortcuts-title">快捷键</div>
-        <p><span class="info-label">放大:</span> + / =</p>
-        <p><span class="info-label">缩小:</span> -</p>
+        <p><span class="info-label">放大:</span> ↑ +</p>
+        <p><span class="info-label">缩小:</span> ↓ -</p>
         <p><span class="info-label">上一张:</span> ←</p>
         <p><span class="info-label">下一张:</span> →</p>
         <p><span class="info-label">重置:</span> 0</p>
@@ -1184,7 +1191,7 @@
       }
     }
 
-    prevImage() {
+    prev() {
       if (this.images.length <= 1) return;
 
       let newIndex = this.currentIndex - 1;
@@ -1196,9 +1203,10 @@
         this.currentIndex = newIndex;
         this.loadCurrentImage();
       }
+      if (this.options.change) this.options.change(this.currentIndex, 'prev');
     }
 
-    nextImage() {
+    next() {
       if (this.images.length <= 1) return;
 
       let newIndex = this.currentIndex + 1;
@@ -1210,6 +1218,7 @@
         this.currentIndex = newIndex;
         this.loadCurrentImage();
       }
+      if (this.options.change) this.options.change(this.currentIndex, 'next');
     }
 
     bindEvents() {
@@ -1291,28 +1300,6 @@
         this.updateImageTransform();
         e.preventDefault();
       });
-
-      // this.addEvent(document, 'mousemove', e => {
-      //   if (!this.isDragging) return;
-
-      //   const deltaX = e.clientX - this.startX;
-      //   const deltaY = e.clientY - this.startY;
-
-      //   // 修复：根据旋转角度正确计算拖拽方向
-      //   const angleRad = this.rotation * Math.PI;
-
-      //   // 直接应用旋转矩阵到拖拽向量
-      //   const rotatedDeltaX = deltaX * Math.cos(angleRad) - deltaY * Math.sin(angleRad);
-      //   console.log('🚀 ~ rotatedDeltaX:', rotatedDeltaX);
-      //   const rotatedDeltaY = deltaX * Math.sin(angleRad) + deltaY * Math.cos(angleRad);
-      //   console.log('🚀 ~ rotatedDeltaY:', rotatedDeltaY);
-
-      //   this.translateX = this.startTranslateX + rotatedDeltaX;
-      //   this.translateY = this.startTranslateY + rotatedDeltaY;
-
-      //   this.updateImageTransform();
-      //   e.preventDefault();
-      // });
 
       // 鼠标释放
       this.addEvent(document, 'mouseup', () => {
@@ -1623,7 +1610,7 @@
       };
     }
 
-    resetTransform() {
+    reset() {
       this.rotation = 0;
       const metadata = this.imageMetadata[this.currentIndex];
       if (metadata) {
@@ -1710,40 +1697,35 @@
       switch (e.key) {
         case 'Escape':
           this.close();
-          e.preventDefault();
           break;
         case 'ArrowLeft':
-          this.prevImage();
-          e.preventDefault();
+          this.prev();
           break;
         case 'ArrowRight':
-          this.nextImage();
-          e.preventDefault();
+          this.next();
           break;
+        case 'ArrowUp':
         case '+':
         case '=':
           this.zoom(0.1);
-          e.preventDefault();
           break;
+        case 'ArrowDown':
         case '-':
           this.zoom(-0.1);
-          e.preventDefault();
           break;
         case '0':
-          this.resetTransform();
-          e.preventDefault();
+          this.reset();
           break;
         case 'f':
         case 'F':
           this.toggleFullscreen();
-          e.preventDefault();
           break;
         case 'i':
         case 'I':
           this.toggleImageInfo();
-          e.preventDefault();
           break;
       }
+      e.preventDefault();
     }
 
     handleResize() {
@@ -1799,6 +1781,7 @@
       this.container.style.display = 'block';
       setTimeout(() => {
         this.container.style.opacity = '1';
+        if (this.options.show) this.options.show(this.container);
       }, 10);
     }
 
@@ -1811,6 +1794,7 @@
         const styles = document.getElementById('images-viewer-styles');
         if (styles) styles.remove();
         if (this.container) this.container.remove();
+        if (this.options.close) this.options.close();
       }, 300);
     }
   }

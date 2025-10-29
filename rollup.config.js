@@ -7,23 +7,8 @@ export default {
   output: [
     {
       file: 'dist/index.js',
-      format: 'cjs',
-      exports: 'default',
-    },
-    {
-      file: 'dist/index.esm.js',
-      format: 'esm',
-    },
-    {
-      file: 'dist/index.umd.js',
       format: 'umd',
-      name: 'ImageViewer',
-    },
-    {
-      file: 'dist/index.min.js',
-      format: 'umd',
-      name: 'ImageViewer',
-      plugins: [terser()],
+      name: 'ImagesViewer',
     },
   ],
   plugins: [
@@ -31,5 +16,30 @@ export default {
       browser: true,
     }),
     commonjs(),
+    terser({
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        ecma: 2020,
+        module: true,
+        warnings: false,
+        comparisons: true,
+        conditionals: true,
+        booleans: true,
+        loops: true,
+        unused: true,
+        toplevel: true,
+        unsafe_proto: true,
+        passes: 3,
+      },
+      mangle: {
+        properties: {
+          regex: /^_[^_]/,
+        },
+      },
+      output: {
+        comments: false,
+      },
+    }),
   ],
 };

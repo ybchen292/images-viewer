@@ -4,10 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>图片查看器示例</title>
+    <style></style>
   </head>
   <body>
     <button id="openViewer">单图预览</button>
-    <button id="openViewer2">多图预览</button>
+    <button id="openViewer2">自定义按钮和触发事件</button>
 
     <script src="index.js"></script>
     <script>
@@ -21,6 +22,38 @@
             'https://picsum.photos/id/10/1200/800',
             'https://picsum.photos/id/1005/1600/900',
           ],
+          customButtons: [
+            [
+              '🔍',
+              () => {
+                console.log('🔍');
+                viewer.loadCurrentImage(1);
+              },
+            ],
+          ],
+          change: (index, direction) => {
+            console.log(index, direction);
+          },
+          show: dom => {
+            // 自定义按钮
+            const toolbar = dom.querySelector('.images-viewer-toolbar');
+            const button = document.createElement('button');
+            button.className = 'images-viewer-tool-btn';
+
+            const iconSpan = document.createElement('span');
+            iconSpan.textContent = 'test';
+            button.appendChild(iconSpan);
+
+            button.addEventListener('click', e => {
+              console.log('test');
+              // e.stopPropagation();
+            });
+            toolbar.appendChild(button);
+            console.log('show', dom);
+          },
+          close: () => {
+            console.log('close');
+          },
         });
       });
     </script>

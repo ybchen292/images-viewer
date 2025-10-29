@@ -12,7 +12,7 @@
 - 🔍 **缩放操作** - 鼠标滚轮、按钮、双击缩放
 - 🔄 **旋转功能** - 左右旋转图片
 - 📱 **触摸支持** - 移动端手势操作
-- 🎨 **主题定制** - 可自定义颜色、样式
+- 🎨 **主题定制** - 可自定义颜色、样式、按钮
 - ⌨️ **键盘快捷键** - 丰富的键盘操作支持
 - 📱 **响应式设计** - 适配桌面和移动设备
 - 🔄 **缩略图导航** - 快速切换图片
@@ -119,6 +119,24 @@ const viewer = new ImagesViewer({
     originalSize: true, // 原始尺寸
   },
 
+   // 自定义按钮
+  customButtons: [
+    ['🔍', function() { console.log('自定义按钮点击'); }]
+  ],
+
+  // 事件回调
+  show: function(container) {
+    console.log('查看器显示');
+  },
+
+  close: function() {
+    console.log('查看器关闭');
+  },
+
+  change: function(currentIndex, direction) {
+    console.log('图片切换:', currentIndex, direction);
+  }
+
   // 图片信息显示
   imageInfo: {
     visible: false, // 默认显示信息
@@ -180,14 +198,13 @@ const viewer = new ImagesViewer({
 
 ```javascript
 // 下一张图片
-viewer.nextImage();
+viewer.next();
 
 // 上一张图片
-viewer.prevImage();
+viewer.prev();
 
 // 跳转到指定索引
-viewer.currentIndex = 2;
-viewer.loadCurrentImage();
+viewer.loadCurrentImage(2);
 ```
 
 ### 变换操作
@@ -202,7 +219,7 @@ viewer.rotate(90); // 顺时针旋转90度
 viewer.rotate(-90); // 逆时针旋转90度
 
 // 重置变换
-viewer.resetTransform();
+viewer.reset();
 
 // 显示原始尺寸
 viewer.showOriginalSize();
@@ -230,16 +247,16 @@ viewer.downloadImage();
 
 ## 键盘快捷键
 
-| 快捷键    | 功能              |
-| --------- | ----------------- |
-| `ESC`     | 关闭查看器        |
-| `←`       | 上一张图片        |
-| `→`       | 下一张图片        |
-| `+` / `=` | 放大图片          |
-| `-`       | 缩小图片          |
-| `0`       | 重置变换          |
-| `F`       | 切换全屏          |
-| `I`       | 显示/隐藏信息面板 |
+| 快捷键  | 功能              |
+| ------- | ----------------- |
+| `ESC`   | 关闭查看器        |
+| `←`     | 上一张图片        |
+| `→`     | 下一张图片        |
+| `↑` `+` | 放大图片          |
+| `↓` `-` | 缩小图片          |
+| `0`     | 重置变换          |
+| `F`     | 切换全屏          |
+| `I`     | 显示/隐藏信息面板 |
 
 ## 鼠标/触摸操作
 
@@ -255,20 +272,6 @@ viewer.downloadImage();
 - **双指捏合**: 缩放图片
 - **双击**: 切换缩放状态
 
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg', 'image2.jpg'],
-  theme: {
-    viewerBgColor: 'rgba(0, 0, 0, 0.8)',
-    toolbarBgColor: 'rgba(0, 0, 0, 0.6)',
-    buttonBgColor: 'rgba(255, 255, 255, 0.2)',
-    buttonHoverBg: 'rgba(255, 255, 255, 0.3)',
-    textColor: 'rgba(255, 255, 255, 0.9)',
-    activeColor: 'rgba(66, 133, 244, 0.8)',
-  },
-});
-```
-
 ## 响应式设计
 
 查看器会自动适配不同屏幕尺寸：
@@ -276,13 +279,6 @@ const viewer = new ImagesViewer({
 - **桌面端**: 完整的工具栏和功能
 - **平板端**: 适当缩小的按钮和间距
 - **手机端**: 紧凑的布局，优化触摸体验
-
-## 浏览器支持
-
-- Chrome 60+
-- Firefox 55+
-- Safari 12+
-- Edge 79+
 
 ## 示例
 
@@ -323,33 +319,48 @@ const viewer = new ImagesViewer({
 const viewer = new ImagesViewer({
   images: imageArray,
   buttons: {
-    zoomIn: true,
-    zoomOut: true,
-    rotateLeft: true,
-    rotateRight: true,
-    reset: true,
     download: false, // 禁用下载
-    fullscreen: true,
-    prev: true,
-    next: true,
-    close: true,
-    topClose: true,
-    thumbnails: true,
-    info: true,
-    originalSize: true,
   },
   imageInfo: {
-    visible: false,
-    showName: true,
-    showDimensions: true,
+    visible: true,
   },
   theme: {
     viewerBgColor: 'rgba(0, 0, 0, 0.6)',
     toolbarBgColor: 'rgba(30, 30, 30, 0.8)',
-    buttonBgColor: 'rgba(255, 255, 255, 0.1)',
-    buttonHoverBg: 'rgba(255, 255, 255, 0.2)',
-    textColor: 'rgba(255, 255, 255, 0.9)',
-    activeColor: 'rgba(66, 133, 244, 0.8)',
+  },
+  // 自定义按钮
+  customButtons: [
+    [
+      '🔍',
+      () => {
+        console.log('🔍');
+        viewer.loadCurrentImage(1);
+      },
+    ],
+  ],
+  change: (index, direction) => {
+    // direction: 'prev' | 'next'
+    console.log(index, direction);
+  },
+  show: dom => {
+    // 自定义按钮
+    const toolbar = dom.querySelector('.images-viewer-toolbar');
+    const button = document.createElement('button');
+    button.className = 'images-viewer-tool-btn';
+
+    const iconSpan = document.createElement('span');
+    iconSpan.textContent = 'test';
+    button.appendChild(iconSpan);
+
+    button.addEventListener('click', e => {
+      console.log('test');
+      // e.stopPropagation();
+    });
+    toolbar.appendChild(button);
+    console.log('show', dom);
+  },
+  close: () => {
+    console.log('close');
   },
 });
 ```

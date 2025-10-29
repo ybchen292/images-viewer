@@ -1,10 +1,8 @@
 {
   "name": "images-viewer-js",
-  "version": "1.0.9",
-  "description": "images-viewer一个功能丰富的图片查看器，支持缩放、旋转、导航等操作。原生javascript实现。不局限于框架使用",
+  "version": "1.0.11",
+  "description": "images-viewer-js一个功能丰富的图片查看器，支持缩放、旋转、导航等操作。原生javascript实现。不局限于框架使用",
   "main": "dist/index.js",
-  "module": "dist/index.esm.js",
-  "unpkg": "dist/index.umd.js",
   "type": "module",
   "files": [
     "dist"
@@ -16,15 +14,17 @@
     "test": "echo \"No tests specified\" && exit 0"
   },
   "keywords": [
+    "viewer",
+    "image",
+    "images",
     "image-viewer",
     "images-viewer",
-    "images-gallery",
+    "image-viewer-js",
+    "images-viewer-js",
     "zoom",
     "rotate",
     "drag",
-    "lightbox",
-    "responsive",
-    "touch-friendly"
+    "javascript"
   ],
   "author": "446354153@qq.com",
   "license": "MIT",
