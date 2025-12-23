@@ -158,14 +158,24 @@ const viewer = new ImagesViewer({
     // 按钮相关（半透明中灰）
     buttonBgColor: 'rgba(150, 150, 150, 0.7)',
     buttonHoverBg: 'rgba(200, 200, 200, 0.4)',
-    buttonSize: '50px',
+    buttonSize: '40px',
     buttonFontSize: '20px',
     buttonBorderRadius: '50%',
 
+    // 导航按钮相关（半透明中灰）
+    navButtonBgColor: 'rgba(150, 150, 150, 0.7)',
+    navButtonHoverBg: 'rgba(200, 200, 200, 0.4)',
+    navButtonSize: '50px',
+    navButtonFontSize: '20px',
+    navButtonBorderRadius: '50%',
+
     // 右上角关闭按钮
-    topCloseBtnSize: '44px',
+    topCloseBtnSize: '50px',
     topCloseBtnTop: '20px',
     topCloseBtnRight: '20px',
+    topCloseBtnFontSize: '24px',
+    topCloseBtnBgColor: 'rgba(150, 150, 150, 0.7)',
+    topCloseBtnHoverBg: 'rgba(200, 200, 200, 0.4)',
 
     // 信息栏相关（半透明浅灰）
     infoBgColor: 'rgba(150, 150, 150, 0.7)',

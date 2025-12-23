@@ -74,14 +74,25 @@
           // 按钮相关（半透明中灰）
           buttonBgColor: 'rgba(150, 150, 150, 0.7)',
           buttonHoverBg: 'rgba(200, 200, 200, 0.4)',
-          buttonSize: '50px',
+          buttonSize: '40px',
           buttonFontSize: '20px',
           buttonBorderRadius: '50%',
 
+          // 导航按钮相关（半透明中灰）
+          navButtonBgColor: 'rgba(150, 150, 150, 0.7)',
+          navButtonHoverBg: 'rgba(200, 200, 200, 0.4)',
+          navButtonSize: '50px',
+          navButtonFontSize: '20px',
+          navButtonBorderRadius: '50%',
+
           // 右上角关闭按钮
-          topCloseBtnSize: '44px',
+          topCloseBtnSize: '50px',
           topCloseBtnTop: '20px',
           topCloseBtnRight: '20px',
+          topCloseBtnFontSize: '24px',
+          topCloseBtnBgColor: 'rgba(150, 150, 150, 0.7)',
+          topCloseBtnHoverBg: 'rgba(200, 200, 200, 0.4)',
+          // topCloseBtnHoverBg: 'rgba(255, 50, 50, 0.3)',
 
           // 信息栏相关（半透明浅灰）
           infoBgColor: 'rgba(150, 150, 150, 0.7)',
@@ -212,11 +223,21 @@
           --button-size: ${this.options.theme.buttonSize};
           --button-font-size: ${this.options.theme.buttonFontSize};
           --button-border-radius: ${this.options.theme.buttonBorderRadius};
+
+          /* 导航按钮相关变量 */
+          --nav-button-bg-color: ${this.options.theme.navButtonBgColor};
+          --nav-button-hover-bg: ${this.options.theme.navButtonHoverBg};
+          --nav-button-size: ${this.options.theme.navButtonSize};
+          --nav-button-font-size: ${this.options.theme.navButtonFontSize};
+          --nav-button-border-radius: ${this.options.theme.navButtonBorderRadius};
           
           /* 右上角关闭按钮变量 */
           --top-close-btn-size: ${this.options.theme.topCloseBtnSize};
           --top-close-btn-top: ${this.options.theme.topCloseBtnTop};
           --top-close-btn-right: ${this.options.theme.topCloseBtnRight};
+          --top-close-btn-font-size: ${this.options.theme.topCloseBtnFontSize};
+          --top-close-btn-bg-color: ${this.options.theme.topCloseBtnBgColor};
+          --top-close-btn-hover-bg: ${this.options.theme.topCloseBtnHoverBg};
           
           /* 信息栏相关变量 */
           --info-bg-color: ${this.options.theme.infoBgColor};
@@ -349,7 +370,7 @@
           background-color: var(--button-bg-color);
           color: var(--text-color);
           border: none;
-          font-size: 20px;
+          font-size:  var(--top-close-btn-font-size);
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -361,7 +382,7 @@
         }
 
         .images-viewer-top-close-btn:hover {
-          background-color: rgba(255, 50, 50, 0.3);
+          background-color: var(--top-close-btn-hover-bg);
           transform: scale(1.1);
         }
 
@@ -467,13 +488,13 @@
         }
 
         .images-viewer-nav-btn {
-          width: var(--button-size);
-          height: var(--button-size);
-          border-radius: 50%;
-          background-color: var(--button-bg-color);
+          width: var(--nav-button-size);
+          height: var(--nav-button-size);
+          border-radius: var(--nav-button-border-radius);
+          background-color: var(--nav-button-bg-color);
           color: var(--text-color);
           border: none;
-          font-size: 24px;
+          font-size: var(--nav-button-font-size);
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -487,7 +508,7 @@
         }
 
         .images-viewer-nav-btn:hover {
-          background-color: var(--button-hover-bg);
+          background-color: var(--nav-button-hover-bg);
           opacity: 1;
           transform: scale(1.1);
         }
@@ -616,8 +637,8 @@
 
         @media (max-width: 768px) {
           .images-viewer-tool-btn {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             font-size: 18px;
           }
 
@@ -723,6 +744,7 @@
       // 缩放比例显示元素
       this.zoomIndicator = document.createElement('div');
       this.zoomIndicator.className = 'images-viewer-zoom-indicator';
+      this.zoomIndicator.textContent = `100%`;
       this.container.appendChild(this.zoomIndicator);
 
       // 图片信息面板
