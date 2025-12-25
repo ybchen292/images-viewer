@@ -98,6 +98,10 @@ const viewer = new ImagesViewer({
   // 点击遮罩关闭
   closeOnMaskClick: false,
 
+  // 缩放范围
+  minScale: 0.1,
+  maxScale: 5,
+
   // 循环浏览
   loop: true,
 

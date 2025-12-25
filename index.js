@@ -40,6 +40,8 @@
       this.defaultOptions = {
         closeOnMaskClick: false,
         loop: true,
+        minScale: 0.1,
+        maxScale: 5,
         buttons: {
           zoomIn: true,
           zoomOut: true,
@@ -1484,8 +1486,8 @@
           this.touchState.scaleRatio = currentDistance / this.touchState.initialDistance;
           const newScale = this.touchState.initialScale * this.touchState.scaleRatio;
 
-          const minScale = 0.1;
-          const maxScale = 5;
+          const minScale = this.options.minScale;
+          const maxScale = this.options.maxScale;
           const clampedScale = Math.max(minScale, Math.min(maxScale, newScale));
 
           if (Math.abs(clampedScale - this.scale) > this.touchState.minScaleChange) {
@@ -1566,8 +1568,9 @@
 
     zoomAtPoint(delta, x, y) {
       const oldScale = this.scale;
-      const maxScale = 5;
-      const newScale = Math.max(0.1, Math.min(maxScale, this.scale + delta));
+      const maxScale = this.options.maxScale;
+      const minScale = this.options.minScale;
+      const newScale = Math.max(minScale, Math.min(maxScale, this.scale + delta));
 
       if (newScale === this.scale) return;
 
