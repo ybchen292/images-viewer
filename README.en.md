@@ -1,65 +1,65 @@
-# ImagesViewer 图片查看器
+# Images Viewer
 
-一个功能丰富、响应式的图片查看器，支持缩放、旋转、导航等操作。使用原生 javasciprt 写。不局限于框架使用。
+A feature-rich, responsive image viewer supporting zoom, rotation, navigation, and more. Built with vanilla JavaScript, framework-agnostic.
 
-[English](./README.en.md) | [Gitee 地址](https://gitee.com/ybchen292/images-viewer) | [GitHub 地址](https://github.com/ybchen292/images-viewer)
+[中文](./README.md) | [Gitee](https://gitee.com/ybchen292/images-viewer) | [GitHub](https://github.com/ybchen292/images-viewer)
 
-#### [预览地址](https://ybchen292.github.io/images-viewer/)
+#### [Live Demo](https://ybchen292.github.io/images-viewer/)
 
-## 特性
+## Features
 
-- 🖼️ **多图片支持** - 支持单张或多张图片查看
-- 🔍 **缩放操作** - 鼠标滚轮、按钮、双击缩放
-- 🔄 **旋转功能** - 左右旋转图片
-- 📱 **触摸支持** - 移动端手势操作
-- 🎨 **主题定制** - 可自定义颜色、样式、按钮
-- ⌨️ **键盘快捷键** - 丰富的键盘操作支持
-- 📱 **响应式设计** - 适配桌面和移动设备
-- 🔄 **缩略图导航** - 快速切换图片
-- 💾 **下载功能** - 支持图片下载
-- 🖥️ **全屏模式** - 全屏查看图片
+- 🖼️ **Multiple Images Support** - Single or multiple images viewing
+- 🔍 **Zoom Operations** - Mouse wheel, button, and double-click zoom
+- 🔄 **Rotation** - Left and right image rotation
+- 📱 **Touch Support** - Mobile gesture controls
+- 🎨 **Theme Customization** - Customizable colors, styles, and buttons
+- ⌨️ **Keyboard Shortcuts** - Rich keyboard operation support
+- 📱 **Responsive Design** - Adapts to desktop and mobile devices
+- 🔄 **Thumbnail Navigation** - Quick image switching
+- 💾 **Download Functionality** - Image download support
+- 🖥️ **Fullscreen Mode** - Fullscreen image viewing
 
-## 安装和使用
+## Installation and Usage
 
-### 简单用法
+### Simple Usage
 
 ```javascript
-// 单张图片
+// Single image
 const viewer1 = new ImagesViewer('single-image.jpg');
 
-// 多张图片
+// Multiple images
 const viewer2 = new ImagesViewer({
   images: ['img1.jpg', 'img2.jpg', 'img3.jpg'],
 });
 
-// 数组形式
+// Array format
 const viewer3 = new ImagesViewer(['img1.jpg', 'img2.jpg']);
 ```
 
 ### npm
 
 ```html
-<!-- 引入包 -->
+<!-- Install package -->
 npm install images-viewer-js
 
-<!-- vue 环境 -->
+<!-- Vue environment -->
 <script>
   import ImagesViewer from 'images-viewer-js';
-  // 使用
+  // Usage
   const viewer = new ImagesViewer({
     images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
   });
 </script>
 ```
 
-### 浏览器环境
+### Browser Environment
 
 ```html
-<!-- 引入脚本 -->
+<!-- Import script -->
 <script src="images-viewer.js"></script>
 
 <script>
-  // 使用全局变量 ImagesViewer
+  // Use global variable ImagesViewer
   const viewer = new ImagesViewer({
     images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
   });
@@ -86,94 +86,94 @@ define(['images-viewer-js'], function (ImagesViewer) {
 });
 ```
 
-## 配置选项
+## Configuration Options
 
-### 基本配置
+### Basic Configuration
 
 ```javascript
 const viewer = new ImagesViewer({
-  // 图片数组（必需）
+  // Image array (required)
   images: ['image1.jpg', 'image2.jpg'],
 
-  // 点击遮罩关闭
+  // Close on mask click
   closeOnMaskClick: false,
 
-  // 缩放范围
+  // Zoom range
   minScale: 0.1,
   maxScale: 5,
 
-  // 循环浏览
+  // Loop through images
   loop: true,
 
-  // 按钮配置
+  // Button configuration
   buttons: {
-    zoomIn: true, // 放大
-    zoomOut: true, // 缩小
-    rotateLeft: true, // 左旋转
-    rotateRight: true, // 右旋转
-    reset: true, // 重置
-    download: true, // 下载
-    fullscreen: true, // 全屏
-    prev: true, // 上一张
-    next: true, // 下一张
-    close: true, // 关闭
-    topClose: true, // 右上角关闭
-    thumbnails: true, // 缩略图
-    info: true, // 信息面板
-    originalSize: true, // 原始尺寸
+    zoomIn: true, // Zoom in
+    zoomOut: true, // Zoom out
+    rotateLeft: true, // Rotate left
+    rotateRight: true, // Rotate right
+    reset: true, // Reset
+    download: true, // Download
+    fullscreen: true, // Fullscreen
+    prev: true, // Previous
+    next: true, // Next
+    close: true, // Close
+    topClose: true, // Top-right close
+    thumbnails: true, // Thumbnails
+    info: true, // Info panel
+    originalSize: true, // Original size
   },
 
-   // 自定义按钮
+  // Custom buttons
   customButtons: [
-    ['🔍', function() { console.log('自定义按钮点击'); }]
+    ['🔍', function() { console.log('Custom button clicked'); }]
   ],
 
-  // 事件回调
+  // Event callbacks
   show: function(container) {
-    console.log('查看器显示');
+    console.log('Viewer shown');
   },
 
   close: function() {
-    console.log('查看器关闭');
+    console.log('Viewer closed');
   },
 
   change: function(currentIndex, direction) {
-    console.log('图片切换:', currentIndex, direction);
+    console.log('Image changed:', currentIndex, direction);
   }
 
-  // 图片信息显示
+  // Image information display
   imageInfo: {
-    visible: false, // 默认显示信息
-    showName: true, // 显示文件名
-    showDimensions: true, // 显示尺寸
+    visible: false, // Show info by default
+    showName: true, // Show filename
+    showDimensions: true, // Show dimensions
   },
 
-  // 主题配置
+  // Theme configuration
   theme: {
-    // 背景相关
+    // Background related
     viewerBgColor: 'rgba(0, 0, 0, 0.4)',
 
-    // 工具栏相关
+    // Toolbar related
     toolbarBgColor: 'rgba(150, 150, 150, 0.7)',
     toolbarBorderRadius: '30px',
     toolbarPadding: '8px 12px',
     toolbarBottom: '20px',
 
-    // 按钮相关（半透明中灰）
+    // Button related (semi-transparent medium gray)
     buttonBgColor: 'rgba(150, 150, 150, 0.7)',
     buttonHoverBg: 'rgba(200, 200, 200, 0.4)',
     buttonSize: '40px',
     buttonFontSize: '20px',
     buttonBorderRadius: '50%',
 
-    // 导航按钮相关（半透明中灰）
+    // Navigation button related (semi-transparent medium gray)
     navButtonBgColor: 'rgba(150, 150, 150, 0.7)',
     navButtonHoverBg: 'rgba(200, 200, 200, 0.4)',
     navButtonSize: '50px',
     navButtonFontSize: '20px',
     navButtonBorderRadius: '50%',
 
-    // 右上角关闭按钮
+    // Top-right close button
     topCloseBtnSize: '50px',
     topCloseBtnTop: '20px',
     topCloseBtnRight: '20px',
@@ -181,7 +181,7 @@ const viewer = new ImagesViewer({
     topCloseBtnBgColor: 'rgba(150, 150, 150, 0.7)',
     topCloseBtnHoverBg: 'rgba(200, 200, 200, 0.4)',
 
-    // 信息栏相关（半透明浅灰）
+    // Info bar related (semi-transparent light gray)
     infoBgColor: 'rgba(150, 150, 150, 0.7)',
     infoBorderRadius: '12px',
     infoPadding: '10px 15px',
@@ -189,7 +189,7 @@ const viewer = new ImagesViewer({
     infoTop: '70px',
     infoLeft: '20px',
 
-    // 缩放指示器
+    // Zoom indicator
     zoomIndicatorBg: 'rgba(150, 150, 150, 0.7)',
     zoomIndicatorBorderRadius: '18px',
     zoomIndicatorPadding: '6px 12px',
@@ -197,7 +197,7 @@ const viewer = new ImagesViewer({
     zoomIndicatorTop: '20px',
     zoomIndicatorLeft: '20px',
 
-    // 通用
+    // General
     activeColor: 'rgba(100, 150, 255, 0.8)',
     textColor: 'rgba(255, 255, 255, 0.9)',
     shadowColor: 'rgba(0, 0, 0, 0.2)',
@@ -206,106 +206,106 @@ const viewer = new ImagesViewer({
 });
 ```
 
-## 方法
+## Methods
 
-### 图片导航
+### Image Navigation
 
 ```javascript
-// 下一张图片
+// Next image
 viewer.next();
 
-// 上一张图片
+// Previous image
 viewer.prev();
 
-// 跳转到指定索引
+// Jump to specific index
 viewer.loadCurrentImage(2);
 ```
 
-### 变换操作
+### Transform Operations
 
 ```javascript
-// 缩放
-viewer.zoom(0.1); // 放大10%
-viewer.zoom(-0.1); // 缩小10%
+// Zoom
+viewer.zoom(0.1); // Zoom in 10%
+viewer.zoom(-0.1); // Zoom out 10%
 
-// 旋转
-viewer.rotate(90); // 顺时针旋转90度
-viewer.rotate(-90); // 逆时针旋转90度
+// Rotate
+viewer.rotate(90); // Rotate 90 degrees clockwise
+viewer.rotate(-90); // Rotate 90 degrees counter-clockwise
 
-// 重置变换
+// Reset transform
 viewer.reset();
 
-// 显示原始尺寸
+// Show original size
 viewer.showOriginalSize();
 ```
 
-### 视图控制
+### View Control
 
 ```javascript
-// 切换全屏
+// Toggle fullscreen
 viewer.toggleFullscreen();
 
-// 显示/隐藏图片信息
+// Show/hide image info
 viewer.toggleImageInfo();
 
-// 关闭查看器
+// Close viewer
 viewer.close();
 ```
 
-### 下载
+### Download
 
 ```javascript
-// 下载当前图片
+// Download current image
 viewer.downloadImage();
 ```
 
-## 键盘快捷键
+## Keyboard Shortcuts
 
-| 快捷键  | 功能              |
-| ------- | ----------------- |
-| `ESC`   | 关闭查看器        |
-| `←`     | 上一张图片        |
-| `→`     | 下一张图片        |
-| `↑` `+` | 放大图片          |
-| `↓` `-` | 缩小图片          |
-| `0`     | 重置变换          |
-| `F`     | 切换全屏          |
-| `I`     | 显示/隐藏信息面板 |
+| Shortcut | Function                    |
+| -------- | --------------------------- |
+| `ESC`    | Close viewer                |
+| `←`      | Previous image              |
+| `→`      | Next image                  |
+| `↑` `+`  | Zoom in                     |
+| `↓` `-`  | Zoom out                    |
+| `0`      | Reset transform             |
+| `F`      | Toggle fullscreen           |
+| `I`      | Show/hide info panel        |
 
-## 鼠标/触摸操作
+## Mouse/Touch Operations
 
-### 鼠标操作
+### Mouse Operations
 
-- **拖动**: 按住鼠标左键拖动图片
-- **缩放**: 鼠标滚轮
-- **双击**: 切换缩放状态
+- **Drag**: Hold left mouse button to drag image
+- **Zoom**: Mouse wheel
+- **Double-click**: Toggle zoom state
 
-### 触摸操作
+### Touch Operations
 
-- **单指拖动**: 移动图片
-- **双指捏合**: 缩放图片
-- **双击**: 切换缩放状态
+- **Single-finger drag**: Move image
+- **Two-finger pinch**: Zoom image
+- **Double-tap**: Toggle zoom state
 
-## 响应式设计
+## Responsive Design
 
-查看器会自动适配不同屏幕尺寸：
+The viewer automatically adapts to different screen sizes:
 
-- **桌面端**: 完整的工具栏和功能
-- **平板端**: 适当缩小的按钮和间距
-- **手机端**: 紧凑的布局，优化触摸体验
+- **Desktop**: Full toolbar and features
+- **Tablet**: Appropriately scaled buttons and spacing
+- **Mobile**: Compact layout optimized for touch
 
-## 示例
+## Examples
 
-### 基本示例
+### Basic Example
 
 ```html
 <!DOCTYPE html>
 <html>
   <head>
-    <title>ImagesViewer 示例</title>
+    <title>ImagesViewer Example</title>
   </head>
   <body>
-    <button onclick="openViewer()">查看图片</button>
+    <button onclick="openViewer()">View Images</button>
 
     <script src="images-viewer.js"></script>
     <script>
@@ -327,13 +327,13 @@ viewer.downloadImage();
 </html>
 ```
 
-### 高级定制示例
+### Advanced Customization Example
 
 ```javascript
 const viewer = new ImagesViewer({
   images: imageArray,
   buttons: {
-    download: false, // 禁用下载
+    download: false, // Disable download
   },
   imageInfo: {
     visible: true,
@@ -342,7 +342,7 @@ const viewer = new ImagesViewer({
     viewerBgColor: 'rgba(0, 0, 0, 0.6)',
     toolbarBgColor: 'rgba(30, 30, 30, 0.8)',
   },
-  // 自定义按钮
+  // Custom buttons
   customButtons: [
     [
       '🔍',
@@ -357,7 +357,7 @@ const viewer = new ImagesViewer({
     console.log(index, direction);
   },
   show: dom => {
-    // 自定义按钮
+    // Custom button
     const toolbar = dom.querySelector('.images-viewer-toolbar');
     const button = document.createElement('button');
     button.className = 'images-viewer-tool-btn';
@@ -379,6 +379,6 @@ const viewer = new ImagesViewer({
 });
 ```
 
-## 许可证
+## License
 
 MIT License
