@@ -9,9 +9,11 @@
   <body>
     <h2>
       预览的图片地址
-      <div><a href="https://picsum.photos/id/237/800/600">https://picsum.photos/id/237/800/600</a></div>
-      <div><a href="https://picsum.photos/id/1005/1600/900">https://picsum.photos/id/1005/1600/900</a></div>
-      <div><a href="https://picsum.photos/id/10/1200/800">https://picsum.photos/id/10/1200/800</a></div>
+      <!-- <div><a href="https://picsum.photos/id/237/800/600">https://picsum.photos/id/237/800/600</a></div>
+      <div>
+        <a href="https://picsum.photos/id/1005/1600/900">https://picsum.photos/id/1005/1600/900</a>
+      </div>
+      <div><a href="https://picsum.photos/id/10/1200/800">https://picsum.photos/id/10/1200/800</a></div> -->
     </h2>
     <button id="openViewer">单图预览</button>
     <button id="openViewer2">自定义按钮和触发事件</button>
@@ -24,9 +26,24 @@
       document.getElementById('openViewer2').addEventListener('click', function () {
         const viewer = new ImagesViewer({
           images: [
+            'https://picsum.photos/id/20/200/300',
             'https://picsum.photos/id/237/800/600',
-            'https://picsum.photos/id/10/1200/800',
-            'https://picsum.photos/id/1005/1600/900',
+            'https://picsum.photos/id/21/200/300',
+            'https://picsum.photos/id/22/200/300',
+            'https://picsum.photos/id/23/200/300',
+            'https://picsum.photos/id/24/200/300',
+            'https://picsum.photos/id/25/200/300',
+            'https://picsum.photos/id/26/200/300',
+            'https://picsum.photos/id/27/200/300',
+            'https://picsum.photos/id/28/200/300',
+            'https://picsum.photos/id/29/200/300',
+            'https://picsum.photos/id/30/200/800',
+            'https://picsum.photos/id/31/200/300',
+            'https://picsum.photos/id/32/200/300',
+            'https://picsum.photos/id/33/200/300',
+            'https://picsum.photos/id/34/200/300',
+            'https://picsum.photos/id/35/200/300',
+            // 'https://picsum.photos/id/1005/1600/900',
           ],
           minScale: 0.3,
           maxScale: 3,

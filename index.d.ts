@@ -20,6 +20,18 @@ interface ImagesViewerOptions {
   loop?: boolean;
 
   /**
+   * 预加载相邻图片数量
+   * @default 3
+   */
+  preloadCount?: number;
+
+  /**
+   * 最大缓存图片数量
+   * @default 30
+   */
+  maxCacheSize?: number;
+
+  /**
    * 最小缩放比例
    * @default 0.1
    */
@@ -84,6 +96,46 @@ interface ImagesViewerOptions {
   };
 
   /**
+   * 国际化配置
+   */
+  i18n?: {
+    /** 信息栏文本 */
+    info?: {
+      /** 名称标签 */
+      name?: string;
+      /** 尺寸标签 */
+      dimensions?: string;
+      /** 快捷键标题 */
+      shortcuts?: string;
+      /** 放大标签 */
+      zoomIn?: string;
+      /** 缩小标签 */
+      zoomOut?: string;
+      /** 上一张标签 */
+      prev?: string;
+      /** 下一张标签 */
+      next?: string;
+      /** 重置标签 */
+      reset?: string;
+      /** 全屏标签 */
+      fullscreen?: string;
+      /** 信息标签 */
+      info?: string;
+      /** 关闭标签 */
+      close?: string;
+    };
+    /** 按钮文本 */
+    buttons?: {
+      /** 上一张按钮文本 */
+      prev?: string;
+      /** 下一张按钮文本 */
+      next?: string;
+      /** 关闭按钮文本 */
+      close?: string;
+    };
+  };
+
+  /**
    * 主题配置
    */
   theme?: {
@@ -139,6 +191,13 @@ interface ImagesViewerOptions {
     textColor?: string;
     shadowColor?: string;
     transitionSpeed?: string;
+
+    // 缩略图
+    thumbItemWidth?: string;
+    thumbItemHeight?: string;
+    thumbGap?: string;
+    thumbPadding?: string;
+    thumbMaxWidth?: string;
   };
 
   /**

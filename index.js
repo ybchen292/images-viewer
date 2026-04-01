@@ -4,6 +4,8 @@ class ImagesViewer {
     this.defaultOptions = {
       closeOnMaskClick: false,
       loop: true,
+      preloadCount: 3,
+      maxCacheSize: 30,
       minScale: 0.1,
       maxScale: 5,
       buttons: {
@@ -26,6 +28,28 @@ class ImagesViewer {
         visible: false,
         showName: true,
         showDimensions: true,
+      },
+      i18n: {
+        // 信息栏文本
+        info: {
+          name: '名称:',
+          dimensions: '尺寸:',
+          shortcuts: '快捷键',
+          zoomIn: '放大:',
+          zoomOut: '缩小:',
+          prev: '上一张:',
+          next: '下一张:',
+          reset: '重置:',
+          fullscreen: '全屏:',
+          info: '信息:',
+          close: '关闭:',
+        },
+        // 按钮文本
+        buttons: {
+          prev: '上一张 (←)',
+          next: '下一张 (→)',
+          close: '关闭 (Esc)',
+        },
       },
       theme: {
         // 背景相关
@@ -81,6 +105,13 @@ class ImagesViewer {
         textColor: 'rgba(255, 255, 255, 0.9)',
         shadowColor: 'rgba(0, 0, 0, 0.2)',
         transitionSpeed: '0.3s',
+
+        // 缩略图
+        thumbItemWidth: '70px',
+        thumbItemHeight: '45px',
+        thumbGap: '10px',
+        thumbPadding: '15px',
+        thumbMaxWidth: '70%',
       },
     };
 
@@ -90,6 +121,12 @@ class ImagesViewer {
       ...options,
       buttons: { ...this.defaultOptions.buttons, ...(options?.buttons || {}) },
       imageInfo: { ...this.defaultOptions.imageInfo, ...(options?.imageInfo || {}) },
+      i18n: {
+        ...this.defaultOptions.i18n,
+        ...(options?.i18n || {}),
+        info: { ...this.defaultOptions.i18n.info, ...(options?.i18n?.info || {}) },
+        buttons: { ...this.defaultOptions.i18n.buttons, ...(options?.i18n?.buttons || {}) },
+      },
       theme: { ...this.defaultOptions.theme, ...(options?.theme || {}) },
     };
 
@@ -114,6 +151,7 @@ class ImagesViewer {
     this.imageInfoVisible = this.options.imageInfo.visible;
     this.imageMetadata = [];
     this.loadedImages = new Map();
+    this.loadingImages = new Map();
 
     // 双击相关状态
     this.lastTapTime = 0;
@@ -152,20 +190,20 @@ class ImagesViewer {
     // 注入CSS样式
     this.injectStyles();
 
+    // 预加载图片
+    this.preloadImages();
+
     // 创建DOM元素
     this.createOptimizedElements();
 
     // 绑定事件
     this.bindEvents();
 
-    // 预加载图片
-    this.preloadImages();
+    // 显示预览器
+    this.show();
 
     // 加载第一张图片
     this.loadCurrentImage();
-
-    // 显示预览器
-    this.show();
   }
 
   // 注入CSS样式
@@ -226,14 +264,22 @@ class ImagesViewer {
           --text-color: ${this.options.theme.textColor};
           --shadow-color: ${this.options.theme.shadowColor};
           --transition-speed: ${this.options.theme.transitionSpeed};
+          
+          /* 缩略图相关变量 */
+          --thumb-max-width: ${this.options.theme.thumbMaxWidth};
+          --thumb-gap: ${this.options.theme.thumbGap};
+          --thumb-padding: ${this.options.theme.thumbPadding};
+          --thumb-item-width: ${this.options.theme.thumbItemWidth};
+          --thumb-item-height: ${this.options.theme.thumbItemHeight};
         }
 
         .images-viewer-container {
           position: fixed;
-          top: 0;
           left: 0;
-          width: 100vw;
-          height: 100vh;
+          top: 0;
+          inset: 0;
+          width: 100%;
+          height: 100%;
           z-index: 9999;
           opacity: 0;
           transition: opacity var(--transition-speed) ease;
@@ -241,7 +287,8 @@ class ImagesViewer {
           -webkit-user-select: none;
           user-select: none;
           display: none;
-          background-color: var(--viewer-bg-color) ;
+          background-color: var(--viewer-bg-color);
+          overflow: hidden;
         }
 
         .images-viewer-container::backdrop,
@@ -553,13 +600,14 @@ class ImagesViewer {
           position: absolute;
           bottom: 90px;
           left: 50%;
+          max-width: var(--thumb-max-width);
           transform: translateX(-50%);
-          padding: 10px 15px;
+          padding: 10px var(--thumb-padding);
           background-color: var(--toolbar-bg-color);
           backdrop-filter: blur(8px);
           border-radius: 12px;
           display: flex;
-          gap: 10px;
+          gap: var(--thumb-gap);
           overflow-x: auto;
           scrollbar-width: none;
           -ms-overflow-style: none;
@@ -575,8 +623,8 @@ class ImagesViewer {
         }
 
         .images-viewer-thumbnail-item {
-          width: 70px;
-          height: 45px;
+          width: var(--thumb-item-width);
+          height: var(--thumb-item-height);
           border: 2px solid transparent;
           border-radius: 6px;
           overflow: hidden;
@@ -584,6 +632,7 @@ class ImagesViewer {
           flex-shrink: 0;
           transition: all 0.2s;
           z-index: 11;
+          position: relative;
         }
 
         .images-viewer-thumbnail-item img {
@@ -597,74 +646,43 @@ class ImagesViewer {
           transform: scale(1.05);
         }
 
+        /* 缩略图加载状态 */
+        .images-viewer-thumbnail-loading {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: rgba(0, 0, 0, 0.3);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1;
+        }
+
+        .loading-spinner {
+          width: 20px;
+          height: 20px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top: 2px solid var(--active-color);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        .loading-error {
+          color: #ff6b6b;
+          font-size: 10px;
+          text-align: center;
+          padding: 2px;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
         .images-viewer-thumbnail-item:hover {
           transform: scale(1.05);
-        }
-
-        @media (max-width: 768px) {
-          .images-viewer-tool-btn {
-            width: 40px;
-            height: 40px;
-            font-size: 18px;
-          }
-
-          .images-viewer-toolbar {
-            padding: 6px 8px;
-            bottom: 15px;
-            border-radius: 25px;
-            max-width: 95%;
-          }
-
-          .images-viewer-thumbnails-container {
-            bottom: 80px;
-            padding: 8px 10px;
-            gap: 8px;
-            max-width: 95%;
-          }
-
-          .images-viewer-thumbnail-item {
-            width: 60px;
-            height: 40px;
-          }
-
-          .images-viewer-nav-btn {
-            width: 44px;
-            height: 44px;
-            font-size: 20px;
-          }
-
-          .images-viewer-top-close-btn {
-            width: 40px;
-            height: 40px;
-            top: 15px;
-            right: 15px;
-          }
-
-          .images-viewer-image-info {
-            font-size: 12px;
-            padding: 8px 12px;
-          }
-
-          .images-viewer-zoom-indicator,
-          .images-viewer-image-counter {
-            font-size: 12px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .images-viewer-thumbnails-container {
-            max-width: 95%;
-            padding: 6px 8px;
-          }
-
-          .images-viewer-thumbnail-item {
-            width: 50px;
-            height: 35px;
-          }
-
-          .images-viewer-toolbar {
-            max-width: 95%;
-          }
         }
       `;
     document.head.appendChild(style);
@@ -685,7 +703,7 @@ class ImagesViewer {
     // 图片元素
     this.image = document.createElement('img');
     this.image.className = 'images-viewer-image';
-    this.image.alt = '预览图片';
+    this.image.alt = 'Preview image';
     this.image.crossOrigin = 'anonymous';
     this.imageContainer.appendChild(this.image);
 
@@ -694,7 +712,7 @@ class ImagesViewer {
     this.loading.className = 'images-viewer-loading';
     this.loading.innerHTML = `
         <div class="images-viewer-loading-spinner"></div>
-        <div>加载中...</div>
+        <div>loading...</div>
       `;
     this.imageContainer.appendChild(this.loading);
 
@@ -703,7 +721,7 @@ class ImagesViewer {
       this.topCloseBtn = document.createElement('button');
       this.topCloseBtn.className = 'images-viewer-top-close-btn';
       this.topCloseBtn.textContent = '×';
-      this.topCloseBtn.title = '关闭预览 (ESC)';
+      this.topCloseBtn.title = this.options.i18n.buttons.close;
       this.container.appendChild(this.topCloseBtn);
     }
 
@@ -732,13 +750,13 @@ class ImagesViewer {
       this.createNavButtons();
     }
 
-    // 底部工具栏
-    this.createToolbar();
-
     // 缩略图导航
     if (this.images.length > 1 && this.options.buttons.thumbnails) {
       this.createThumbnails();
     }
+
+    // 底部工具栏
+    this.createToolbar();
   }
 
   // 创建导航按钮
@@ -746,7 +764,7 @@ class ImagesViewer {
     const navContainer = document.createElement('div');
     navContainer.className = 'images-viewer-nav-buttons';
 
-    navContainer.addEventListener('click', e => {
+    this.addEvent(navContainer, 'click', e => {
       e.stopPropagation();
     });
 
@@ -754,8 +772,8 @@ class ImagesViewer {
       this.prevBtn = document.createElement('button');
       this.prevBtn.className = 'images-viewer-nav-btn images-viewer-prev-btn';
       this.prevBtn.textContent = '←';
-      this.prevBtn.title = '上一张 (←)';
-      this.prevBtn.addEventListener('click', e => {
+      this.prevBtn.title = this.options.i18n.buttons.prev;
+      this.addEvent(this.prevBtn, 'click', e => {
         e.stopPropagation();
         this.prev();
       });
@@ -766,8 +784,8 @@ class ImagesViewer {
       this.nextBtn = document.createElement('button');
       this.nextBtn.className = 'images-viewer-nav-btn images-viewer-next-btn';
       this.nextBtn.textContent = '→';
-      this.nextBtn.title = '下一张 (→)';
-      this.nextBtn.addEventListener('click', e => {
+      this.nextBtn.title = this.options.i18n.buttons.next;
+      this.addEvent(this.nextBtn, 'click', e => {
         e.stopPropagation();
         this.next();
       });
@@ -782,8 +800,17 @@ class ImagesViewer {
     const toolbar = document.createElement('div');
     toolbar.className = 'images-viewer-toolbar';
 
-    toolbar.addEventListener('click', e => {
+    this.addEvent(toolbar, 'click', e => {
       e.stopPropagation();
+    });
+
+    // 允许滚轮滚动
+    this.addEvent(toolbar, 'wheel', e => {
+      e.preventDefault(); // 阻止默认垂直滚动
+      e.stopPropagation(); // 阻止事件冒泡到imageContainer
+
+      // 实现水平滚动
+      toolbar.scrollLeft += e.deltaY;
     });
 
     // 导航按钮
@@ -872,7 +899,7 @@ class ImagesViewer {
 
     button.appendChild(iconSpan);
 
-    button.addEventListener('click', e => {
+    this.addEvent(button, 'click', e => {
       e.stopPropagation();
       onClick();
     });
@@ -880,46 +907,131 @@ class ImagesViewer {
     return button;
   }
 
-  // 创建缩略图
   createThumbnails() {
     const thumbContainer = document.createElement('div');
     thumbContainer.className = 'images-viewer-thumbnails-container';
 
-    thumbContainer.addEventListener('click', e => {
+    this.addEvent(thumbContainer, 'click', e => {
       e.stopPropagation();
     });
 
-    this.images.forEach((url, index) => {
-      const thumbItem = document.createElement('div');
-      thumbItem.className = `images-viewer-thumbnail-item ${index === 0 ? 'active' : ''}`;
-      thumbItem.dataset.index = index;
+    // 允许滚轮滚动
+    this.addEvent(thumbContainer, 'wheel', e => {
+      e.preventDefault(); // 阻止默认垂直滚动
+      e.stopPropagation(); // 阻止事件冒泡到imageContainer
 
-      const thumbImg = document.createElement('img');
-      thumbImg.src = url;
-      thumbImg.alt = `缩略图 ${index + 1}`;
-      thumbImg.crossOrigin = 'anonymous';
+      // 实现水平滚动
+      thumbContainer.scrollLeft += e.deltaY;
+    });
 
-      thumbImg.onerror = () => {
-        thumbImg.src =
-          'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzAwMCIgZD0iTTEyIDJDMTEuMzcgMiAxMC43NyAyLjAzIDEwLjIzIDIuMDljLS41MSAwLS45Ni40NS0uOTYuOTZzLjQ1Ljk2Ljk2Ljk2Ljk2LS40NS45Ni0uOTYuNDUtLjk2Ljk2LS45NiIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0yMCAxMkg0Yy0uNTUgMC0xIC40NS0xIDEgMCAuMTguMDIuMzUuMDcuNTFMMiAxOWMwLjU1IDAgMS0uNDUgMS0xVjVjMC0uNTUuNDUtMSAxLTEgMiAwIDMuOTggLjkgNS41IDIgMi42MyAxLjMgNC4xNyAzLjEgNS41IDMgMiAwIDUgMiA1IDV2MmMwIC41NS40NSAxIDEgMWgxNmMuNTUgMCAxLS40NSAxLTF2LTEyYzAtLjU1LS40NS0xLTEtMXptLTggMTRjLTQuNDIgMC04LTMuNTgtOC04czMuNTgtOCA4LTggOCAzLjU4IDggOFMzMC40MiAxNiAyNCAxNnoiLz48L3N2Zz4=';
-      };
+    // 动态计算可视区域可放下的缩略图数量
+    const thumbItemWidth = parseInt(this.options.theme.thumbItemWidth);
+    const thumbGap = parseInt(this.options.theme.thumbGap);
+    const thumbPadding = parseInt(this.options.theme.thumbPadding);
+    const preloadCount = this.options.preloadCount;
 
-      thumbItem.appendChild(thumbImg);
+    const viewportWidth = window.innerWidth;
+    const availableWidth = viewportWidth - thumbPadding * 2;
+    const visibleCount = Math.ceil(availableWidth / (thumbItemWidth + thumbGap));
+    const initialCount = Math.min(visibleCount + preloadCount, this.images.length);
 
-      thumbItem.addEventListener('click', e => {
-        e.stopPropagation();
-        const index = parseInt(thumbItem.dataset.index);
-        if (index !== this.currentIndex) {
-          this.currentIndex = index;
-          this.loadCurrentImage();
-          this.updateThumbnails();
+    for (let i = 0; i < initialCount; i++) {
+      this.createThumbnailItem(thumbContainer, i);
+    }
+
+    // 滚动时懒加载更多缩略图
+    let loadedCount = initialCount;
+    this.addEvent(thumbContainer, 'scroll', () => {
+      const scrollLeft = thumbContainer.scrollLeft;
+      const containerWidth = thumbContainer.clientWidth;
+      const maxScroll = thumbContainer.scrollWidth - containerWidth;
+
+      // 当滚动到接近末尾时，加载更多缩略图
+      if (scrollLeft > maxScroll - containerWidth && loadedCount < this.images.length) {
+        const loadMore = Math.min(visibleCount, this.images.length - loadedCount);
+        for (let i = loadedCount; i < loadedCount + loadMore; i++) {
+          this.createThumbnailItem(thumbContainer, i);
         }
-      });
-
-      thumbContainer.appendChild(thumbItem);
+        loadedCount += loadMore;
+      }
     });
 
     this.container.appendChild(thumbContainer);
+    this.thumbContainer = thumbContainer;
+  }
+
+  createThumbnailItem(container, index) {
+    const url = this.images[index];
+    const thumbItem = document.createElement('div');
+    thumbItem.className = `images-viewer-thumbnail-item ${index === this.currentIndex ? 'active' : ''}`;
+    thumbItem.dataset.index = index;
+
+    const thumbImg = new Image();
+    thumbImg.crossOrigin = 'anonymous';
+
+    // 加载状态容器
+    const loadingContainer = document.createElement('div');
+    loadingContainer.className = 'images-viewer-thumbnail-loading';
+    loadingContainer.innerHTML = '<div class="loading-spinner"></div>';
+    thumbItem.appendChild(loadingContainer);
+
+    // 如果图片已加载，使用缓存
+    if (this.loadedImages.has(url)) {
+      thumbImg.src = this.loadedImages.get(url).src;
+      loadingContainer.remove();
+    } else if (this.loadingImages.has(url)) {
+      // 正在加载中，等待加载完成
+      loadingContainer.style.display = 'flex';
+      thumbImg.onload = () => {
+        loadingContainer.remove();
+        thumbImg.onload = null;
+        thumbImg.onerror = null;
+      };
+      thumbImg.onerror = () => {
+        loadingContainer.remove();
+        thumbImg.onload = null;
+        thumbImg.onerror = null;
+      };
+      thumbImg.src = url;
+    } else {
+      // 未加载，加载缩略图时同时缓存
+      this.loadingImages.set(url, thumbImg);
+      loadingContainer.style.display = 'flex';
+      thumbImg.onload = () => {
+        this.addToCache(url, thumbImg);
+        this.loadingImages.delete(url);
+        this.imageMetadata[index] = {
+          name: this.extractFileName(url),
+          width: thumbImg.naturalWidth || thumbImg.width,
+          height: thumbImg.naturalHeight || thumbImg.height,
+        };
+        loadingContainer.remove();
+        thumbImg.onload = null;
+        thumbImg.onerror = null;
+      };
+      thumbImg.onerror = () => {
+        this.loadingImages.delete(url);
+        loadingContainer.remove();
+        thumbImg.onload = null;
+        thumbImg.onerror = null;
+        console.error(`Thumbnail loading failed: ${url}`);
+      };
+      thumbImg.src = url;
+    }
+
+    thumbItem.appendChild(thumbImg);
+
+    this.addEvent(thumbItem, 'click', e => {
+      e.stopPropagation();
+      const clickedIndex = parseInt(thumbItem.dataset.index);
+      if (clickedIndex !== this.currentIndex) {
+        this.currentIndex = clickedIndex;
+        this.loadCurrentImage();
+        this.updateThumbnails();
+      }
+    });
+
+    container.appendChild(thumbItem);
   }
 
   // 更新图片变换 - 修复居中问题
@@ -979,24 +1091,57 @@ class ImagesViewer {
   }
 
   preloadImages() {
-    this.images.forEach((url, index) => {
-      if (!this.loadedImages.has(url)) {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.src = url;
-        img.onload = () => {
-          this.loadedImages.set(url, img);
-          this.imageMetadata[index] = {
-            name: this.extractFileName(url),
-            width: img.width,
-            height: img.height,
-          };
-        };
-        img.onerror = () => {
-          console.error(`图片预加载失败: ${url}`);
-        };
-      }
-    });
+    // 懒加载：只预加载当前图片附近的几张
+    const preloadRange = this.options.preloadCount;
+    if (preloadRange <= 0) return;
+    const startIndex = Math.max(0, this.currentIndex - preloadRange);
+    const endIndex = Math.min(this.images.length - 1, this.currentIndex + preloadRange);
+
+    for (let i = startIndex; i <= endIndex; i++) {
+      this.loadImageAtIndex(i);
+    }
+  }
+
+  addToCache(url, img) {
+    // 添加到缓存
+    this.loadedImages.set(url, img);
+
+    // 检查是否超过最大缓存数
+    const maxSize = this.options.maxCacheSize;
+    if (maxSize > 0 && this.loadedImages.size > maxSize) {
+      // 移除最旧的缓存（Map 的第一个元素）
+      const oldestUrl = this.loadedImages.keys().next().value;
+      this.loadedImages.delete(oldestUrl);
+    }
+  }
+
+  loadImageAtIndex(index) {
+    const url = this.images[index];
+    if (!url || this.loadedImages.has(url) || this.loadingImages.has(url)) return;
+
+    const img = new Image();
+
+    img.onload = () => {
+      this.addToCache(url, img);
+      this.loadingImages.delete(url);
+
+      this.imageMetadata[index] = {
+        name: this.extractFileName(url),
+        width: img.naturalWidth || img.width,
+        height: img.naturalHeight || img.height,
+      };
+      img.onload = null;
+      img.onerror = null;
+    };
+    img.onerror = () => {
+      this.loadingImages.delete(url);
+      img.onload = null;
+      img.onerror = null;
+      console.error(`Image loading failed: ${url}`);
+    };
+    img.crossOrigin = 'anonymous';
+    img.src = url;
+    this.loadingImages.set(url, img);
   }
 
   extractFileName(url) {
@@ -1020,8 +1165,6 @@ class ImagesViewer {
     if (index !== undefined) {
       this.currentIndex = index;
     }
-    const currentUrl = this.images[this.currentIndex];
-    const isLoaded = this.loadedImages.has(currentUrl);
 
     // 重置双击状态
     this.hasPreviousState = false;
@@ -1043,55 +1186,108 @@ class ImagesViewer {
     this.translateX = 0;
     this.translateY = 0;
 
-    // 如果图片已加载，直接显示
-    if (isLoaded) {
-      const cachedImg = this.loadedImages.get(currentUrl);
-      const tempImg = new Image();
-      tempImg.crossOrigin = 'anonymous';
-      tempImg.src = cachedImg.src;
+    // 动态预加载相邻图片
+    this.preloadAdjacentImages();
 
-      tempImg.onload = () => {
-        this.image.src = tempImg.src;
-        this.image.classList.add('loaded');
+    this.isImageLoaded();
+  }
 
-        const metadata = this.imageMetadata[this.currentIndex];
-        if (metadata) {
-          this.fitImageToScreen(metadata.width, metadata.height);
-          this.updateImageInfo();
-        }
-      };
+  preloadAdjacentImages() {
+    const preloadRange = 2;
+    const startIndex = Math.max(0, this.currentIndex - preloadRange);
+    const endIndex = Math.min(this.images.length - 1, this.currentIndex + preloadRange);
 
-      return;
+    for (let i = startIndex; i <= endIndex; i++) {
+      this.loadImageAtIndex(i);
     }
+  }
 
-    // 新图片加载流程
+  isImageLoaded() {
+    const currentUrl = this.images[this.currentIndex];
+    const isLoaded = this.loadedImages.has(currentUrl);
+    const isLoading = this.loadingImages.has(currentUrl);
+
     this.showLoading();
     this.image.classList.remove('loaded');
 
-    const tempImg = new Image();
-    tempImg.crossOrigin = 'anonymous';
-    tempImg.src = currentUrl;
+    // 如果图片已加载，直接显示
+    if (isLoaded) {
+      const cachedImg = this.loadedImages.get(currentUrl);
+      // 使用 Canvas 绘制已加载的图片，完全避免网络请求
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = cachedImg.naturalWidth || cachedImg.width;
+      canvas.height = cachedImg.naturalHeight || cachedImg.height;
+      ctx.drawImage(cachedImg, 0, 0);
 
-    tempImg.onload = () => {
-      this.loadedImages.set(currentUrl, tempImg);
+      // 将 Canvas 转换为 Blob，然后创建 Blob URL
+      canvas.toBlob(blob => {
+        if (blob) {
+          const blobUrl = URL.createObjectURL(blob);
+          this.image.src = blobUrl;
+
+          // 清理之前的 Blob URL
+          if (this._currentBlobUrl) {
+            URL.revokeObjectURL(this._currentBlobUrl);
+            this._currentBlobUrl = null;
+          }
+          this._currentBlobUrl = blobUrl;
+        }
+      });
+
+      // 立即使用缓存的尺寸信息进行布局
+      const metadata = this.imageMetadata[this.currentIndex];
+      if (metadata) {
+        this.fitImageToScreen(metadata.width, metadata.height);
+        this.updateImageInfo();
+      }
+
+      this.image.classList.add('loaded');
+      this.hideLoading();
+      return;
+    }
+
+    // 如果图片正在加载中，等待加载完成
+    if (isLoading) {
+      const checkLoaded = () => {
+        if (this.loadedImages.has(currentUrl)) {
+          this.isImageLoaded();
+        } else if (this.loadingImages.has(currentUrl)) {
+          setTimeout(checkLoaded, 100);
+        } else {
+          this.hideLoading();
+          console.error('Image loading failed', currentUrl);
+        }
+      };
+      setTimeout(checkLoaded, 100);
+      return;
+    }
+
+    // 图片未加载，直接加载
+    const img = new Image();
+    img.onload = () => {
+      this.addToCache(currentUrl, img);
+      this.loadingImages.delete(currentUrl);
       this.imageMetadata[this.currentIndex] = {
         name: this.extractFileName(currentUrl),
-        width: tempImg.width,
-        height: tempImg.height,
+        width: img.naturalWidth || img.width,
+        height: img.naturalHeight || img.height,
       };
 
-      this.image.src = tempImg.src;
-      this.image.classList.add('loaded');
-      this.fitImageToScreen(tempImg.width, tempImg.height);
-      this.updateImageInfo();
-
-      this.hideLoading();
+      // 加载完成后重新调用
+      this.isImageLoaded();
     };
 
-    tempImg.onerror = () => {
+    img.onerror = () => {
+      this.loadingImages.delete(currentUrl);
       this.hideLoading();
-      alert('图片加载失败');
+      console.error('Image loading failed', currentUrl);
     };
+
+    img.crossOrigin = 'anonymous';
+    img.src = currentUrl;
+    // 跟踪正在加载的 Image 对象
+    this.loadingImages.set(currentUrl, img);
   }
 
   updateZoomIndicator() {
@@ -1105,26 +1301,26 @@ class ImagesViewer {
     const metadata = this.imageMetadata[this.currentIndex];
     if (!metadata) return;
 
-    let infoHtml = '';
+    const i18n = this.options.i18n;
 
+    let infoHtml = '';
     if (this.options.imageInfo.showName) {
-      infoHtml += `<p><span class="info-label">名称:</span> ${metadata.name}</p>`;
+      infoHtml += `<p><span class="info-label">${i18n.info.name}</span> ${metadata.name}</p>`;
     }
 
     if (this.options.imageInfo.showDimensions) {
-      infoHtml += `<p><span class="info-label">尺寸:</span> ${metadata.width} × ${metadata.height}</p>`;
+      infoHtml += `<p><span class="info-label">${i18n.info.dimensions}</span> ${metadata.width} × ${metadata.height}</p>`;
     }
-
     infoHtml += `
-        <div class="images-viewer-shortcuts-title">快捷键</div>
-        <p><span class="info-label">放大:</span> ↑ +</p>
-        <p><span class="info-label">缩小:</span> ↓ -</p>
-        <p><span class="info-label">上一张:</span> ←</p>
-        <p><span class="info-label">下一张:</span> →</p>
-        <p><span class="info-label">重置:</span> 0</p>
-        <p><span class="info-label">全屏:</span> F</p>
-        <p><span class="info-label">信息:</span> I</p>
-        <p><span class="info-label">关闭:</span> ESC</p>
+        <div class="images-viewer-shortcuts-title">${i18n.info.shortcuts}</div>
+        <p><span class="info-label">${i18n.info.zoomIn}</span> ↑ +</p>
+        <p><span class="info-label">${i18n.info.zoomOut}</span> ↓ -</p>
+        <p><span class="info-label">${i18n.info.prev}</span> ←</p>
+        <p><span class="info-label">${i18n.info.next}</span> →</p>
+        <p><span class="info-label">${i18n.info.reset}</span> 0</p>
+        <p><span class="info-label">${i18n.info.fullscreen}</span> F</p>
+        <p><span class="info-label">${i18n.info.info}</span> I</p>
+        <p><span class="info-label">${i18n.info.close}</span> ESC</p>
       `;
 
     this.imageInfoPanel.innerHTML = infoHtml;
@@ -1619,40 +1815,34 @@ class ImagesViewer {
   downloadImage() {
     const currentUrl = this.images[this.currentIndex];
     const metadata = this.imageMetadata[this.currentIndex];
-
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-
-        const dataURL = canvas.toDataURL('image/jpeg');
-
-        const a = document.createElement('a');
-        a.href = dataURL;
-        a.download = metadata ? metadata.name : 'image.jpg';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      } catch (error) {
-        console.error('图片下载失败:', error);
-        this.downloadOriginalImage(currentUrl, metadata);
-      }
-    };
-
-    img.onerror = () => {
-      this.downloadOriginalImage(currentUrl, metadata);
-    };
-
-    img.src = currentUrl;
+    if (this.loadedImages.has(currentUrl)) {
+      const cachedImg = this.loadedImages.get(currentUrl);
+      this.downloadFromImage(cachedImg, metadata);
+    } else {
+      console.error('Image download failed:', currentUrl);
+    }
   }
 
-  downloadOriginalImage(url, metadata) {
+  // 从 Image 对象下载
+  downloadFromImage(img, metadata) {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const dataURL = canvas.toDataURL('image/jpeg');
+      this.downloadedImage(dataURL, metadata);
+    } catch (error) {
+      console.error('Image download failed:', error);
+      // 下载失败，尝试使用原始 URL 下载
+      const currentUrl = this.images[this.currentIndex];
+      this.downloadedImage(currentUrl, metadata);
+    }
+  }
+
+  downloadedImage(url, metadata) {
     try {
       const a = document.createElement('a');
       a.href = url;
@@ -1661,15 +1851,14 @@ class ImagesViewer {
       a.click();
       document.body.removeChild(a);
     } catch (error) {
-      console.error('原图下载失败:', error);
-      alert('图片下载失败，可能是跨域限制导致的');
+      console.error('Original image download failed:', error);
     }
   }
 
   toggleFullscreen() {
     if (!document.fullscreenElement) {
       this.container.requestFullscreen().catch(err => {
-        console.error(`全屏请求失败: ${err.message}`);
+        console.error(`Fullscreen request failed: ${err.message}`);
       });
       this.isFullscreen = true;
     } else {
@@ -1764,6 +1953,39 @@ class ImagesViewer {
       this.updateImageTransform();
       this.updateZoomIndicator();
     }
+
+    // 更新缩略图（重新计算可视数量）
+    this.updateThumbnailsOnResize();
+  }
+
+  // 窗口大小变化时更新缩略图
+  updateThumbnailsOnResize() {
+    if (!this.thumbContainer) return;
+
+    // 动态计算可视区域可放下的缩略图数量
+    const thumbItemWidth = parseInt(this.options.theme.thumbItemWidth);
+    const thumbGap = parseInt(this.options.theme.thumbGap);
+    const thumbPadding = parseInt(this.options.theme.thumbPadding);
+    const preloadCount = this.options.preloadCount;
+
+    const viewportWidth = window.innerWidth;
+    const availableWidth = viewportWidth - thumbPadding * 2;
+    const visibleCount = Math.ceil(availableWidth / (thumbItemWidth + thumbGap));
+    const initialCount = Math.min(visibleCount + preloadCount, this.images.length);
+
+    // 检查当前已加载的缩略图数量
+    const existingItems = this.thumbContainer.querySelectorAll('.images-viewer-thumbnail-item');
+    const loadedCount = existingItems.length;
+
+    // 如果需要加载更多缩略图
+    if (loadedCount < initialCount) {
+      const loadMore = initialCount - loadedCount;
+      for (let i = loadedCount; i < loadedCount + loadMore; i++) {
+        if (i < this.images.length) {
+          this.createThumbnailItem(this.thumbContainer, i);
+        }
+      }
+    }
   }
 
   show() {
@@ -1776,6 +1998,7 @@ class ImagesViewer {
 
   close() {
     this.removeAllEvents();
+    this.cleanup();
 
     this.container.style.opacity = '0';
     setTimeout(() => {
@@ -1785,6 +2008,26 @@ class ImagesViewer {
       if (this.container) this.container.remove();
       if (this.options.close) this.options.close();
     }, 300);
+  }
+
+  cleanup() {
+    // 停止正在加载的图片请求
+    for (const [url, img] of this.loadingImages.entries()) {
+      img.onload = null;
+      img.onerror = null;
+      img.src = ''; // 停止图片加载
+    }
+
+    // 清理缓存的图片
+    this.loadedImages.clear();
+    this.loadingImages.clear();
+    this.imageMetadata = [];
+
+    // 清理 Blob URL
+    if (this._currentBlobUrl) {
+      URL.revokeObjectURL(this._currentBlobUrl);
+      this._currentBlobUrl = null;
+    }
   }
 }
 function throttle(func, delay) {

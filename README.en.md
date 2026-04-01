@@ -18,6 +18,9 @@ A feature-rich, responsive image viewer supporting zoom, rotation, navigation, a
 - 🔄 **Thumbnail Navigation** - Quick image switching
 - 💾 **Download Functionality** - Image download support
 - 🖥️ **Fullscreen Mode** - Fullscreen image viewing
+- 🌍 **Internationalization** - Customizable interface language
+- 📦 **Cache Management** - Intelligent image caching, reducing duplicate requests
+- ⚡ **Performance Optimization** - Lazy loading and preloading strategies
 
 ## Installation and Usage
 
@@ -105,6 +108,12 @@ const viewer = new ImagesViewer({
   // Loop through images
   loop: true,
 
+  // Preload count
+  preloadCount: 3,
+
+  // Maximum cache size
+  maxCacheSize: 30,
+
   // Button configuration
   buttons: {
     zoomIn: true, // Zoom in
@@ -146,6 +155,30 @@ const viewer = new ImagesViewer({
     visible: false, // Show info by default
     showName: true, // Show filename
     showDimensions: true, // Show dimensions
+  },
+
+  // Internationalization configuration
+  i18n: {
+    // Info panel text
+    info: {
+      name: 'Name:',
+      dimensions: 'Size:',
+      shortcuts: 'Shortcuts',
+      zoomIn: 'Zoom In:',
+      zoomOut: 'Zoom Out:',
+      prev: 'Previous:',
+      next: 'Next:',
+      reset: 'Reset:',
+      fullscreen: 'Fullscreen:',
+      info: 'Info:',
+      close: 'Close:',
+    },
+    // Button text
+    buttons: {
+      prev: 'Previous (←)',
+      next: 'Next (→)',
+      close: 'Close (Esc)',
+    },
   },
 
   // Theme configuration
@@ -202,6 +235,13 @@ const viewer = new ImagesViewer({
     textColor: 'rgba(255, 255, 255, 0.9)',
     shadowColor: 'rgba(0, 0, 0, 0.2)',
     transitionSpeed: '0.3s',
+
+    // Thumbnails
+    thumbItemWidth: '70px',
+    thumbItemHeight: '45px',
+    thumbGap: '10px',
+    thumbPadding: '15px',
+    thumbMaxWidth: '70%',
   },
 });
 ```
@@ -376,6 +416,59 @@ const viewer = new ImagesViewer({
   close: () => {
     console.log('close');
   },
+});
+```
+
+### Internationalization Example
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg'],
+  i18n: {
+    info: {
+      name: 'Name:',
+      dimensions: 'Size:',
+      shortcuts: 'Shortcuts',
+      zoomIn: 'Zoom In:',
+      zoomOut: 'Zoom Out:',
+      prev: 'Previous:',
+      next: 'Next:',
+      reset: 'Reset:',
+      fullscreen: 'Fullscreen:',
+      info: 'Info:',
+      close: 'Close:',
+    },
+    buttons: {
+      prev: 'Previous (←)',
+      next: 'Next (→)',
+      close: 'Close (Esc)',
+    },
+  },
+});
+```
+
+### Thumbnail Configuration Example
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
+  theme: {
+    thumbItemWidth: '100px',
+    thumbItemHeight: '60px',
+    thumbGap: '15px',
+    thumbPadding: '20px',
+    thumbMaxWidth: '80%',
+  },
+});
+```
+
+### Cache Management Example
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
+  maxCacheSize: 20, // Maximum 20 images in cache
+  preloadCount: 5, // Preload 5 adjacent images
 });
 ```
 

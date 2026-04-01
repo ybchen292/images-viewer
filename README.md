@@ -18,6 +18,9 @@
 - 🔄 **缩略图导航** - 快速切换图片
 - 💾 **下载功能** - 支持图片下载
 - 🖥️ **全屏模式** - 全屏查看图片
+- 🌍 **国际化支持** - 可自定义界面语言
+- 📦 **缓存管理** - 智能图片缓存，减少重复请求
+- ⚡ **性能优化** - 懒加载和预加载策略
 
 ## 安装和使用
 
@@ -105,6 +108,12 @@ const viewer = new ImagesViewer({
   // 循环浏览
   loop: true,
 
+  // 预加载数量
+  preloadCount: 3,
+
+  // 最大缓存数量
+  maxCacheSize: 30,
+
   // 按钮配置
   buttons: {
     zoomIn: true, // 放大
@@ -146,6 +155,30 @@ const viewer = new ImagesViewer({
     visible: false, // 默认显示信息
     showName: true, // 显示文件名
     showDimensions: true, // 显示尺寸
+  },
+
+  // 国际化配置
+  i18n: {
+    // 信息栏文本
+    info: {
+      name: '名称:',
+      dimensions: '尺寸:',
+      shortcuts: '快捷键',
+      zoomIn: '放大:',
+      zoomOut: '缩小:',
+      prev: '上一张:',
+      next: '下一张:',
+      reset: '重置:',
+      fullscreen: '全屏:',
+      info: '信息:',
+      close: '关闭:',
+    },
+    // 按钮文本
+    buttons: {
+      prev: '上一张 (←)',
+      next: '下一张 (→)',
+      close: '关闭 (Esc)',
+    },
   },
 
   // 主题配置
@@ -202,6 +235,13 @@ const viewer = new ImagesViewer({
     textColor: 'rgba(255, 255, 255, 0.9)',
     shadowColor: 'rgba(0, 0, 0, 0.2)',
     transitionSpeed: '0.3s',
+
+    // 缩略图
+    thumbItemWidth: '70px',
+    thumbItemHeight: '45px',
+    thumbGap: '10px',
+    thumbPadding: '15px',
+    thumbMaxWidth: '70%',
   },
 });
 ```
@@ -376,6 +416,59 @@ const viewer = new ImagesViewer({
   close: () => {
     console.log('close');
   },
+});
+```
+
+### 国际化配置示例
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg'],
+  i18n: {
+    info: {
+      name: 'Name:',
+      dimensions: 'Size:',
+      shortcuts: 'Shortcuts',
+      zoomIn: 'Zoom In:',
+      zoomOut: 'Zoom Out:',
+      prev: 'Previous:',
+      next: 'Next:',
+      reset: 'Reset:',
+      fullscreen: 'Fullscreen:',
+      info: 'Info:',
+      close: 'Close:',
+    },
+    buttons: {
+      prev: 'Previous (←)',
+      next: 'Next (→)',
+      close: 'Close (Esc)',
+    },
+  },
+});
+```
+
+### 缩略图配置示例
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
+  theme: {
+    thumbItemWidth: '100px',
+    thumbItemHeight: '60px',
+    thumbGap: '15px',
+    thumbPadding: '20px',
+    thumbMaxWidth: '80%',
+  },
+});
+```
+
+### 缓存管理示例
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
+  maxCacheSize: 20, // 最大缓存20张图片
+  preloadCount: 5, // 预加载5张相邻图片
 });
 ```
 
