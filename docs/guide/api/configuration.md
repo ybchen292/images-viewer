@@ -1,0 +1,425 @@
+---
+title: 配置
+---
+
+# 配置
+
+本页面记录了 ImagesViewer 所有可用的配置选项。
+
+## 基本配置
+
+### `images`
+
+**类型：** `string | string[]`
+**必填：** 是
+
+要显示的图片。可以是单个图片 URL 或图片 URL 数组。
+
+```javascript
+// 单张图片
+const viewer = new ImagesViewer('image.jpg');
+
+// 多张图片
+const viewer = new ImagesViewer(['image1.jpg', 'image2.jpg']);
+
+// 带选项
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg']
+});
+```
+
+### `closeOnMaskClick`
+
+**类型：** `boolean`
+**默认值：** `false`
+
+点击背景遮罩时是否关闭查看器。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  closeOnMaskClick: true
+});
+```
+
+### `loop`
+
+**类型：** `boolean`
+**默认值：** `true`
+
+到达第一张或最后一张图片时是否循环浏览。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg'],
+  loop: false
+});
+```
+
+### `preloadCount`
+
+**类型：** `number`
+**默认值：** `3`
+
+要预加载的相邻图片数量。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
+  preloadCount: 5
+});
+```
+
+### `maxCacheSize`
+
+**类型：** `number`
+**默认值：** `30`
+
+缓存中保留的最大图片数量。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
+  maxCacheSize: 20
+});
+```
+
+### `minScale`
+
+**类型：** `number`
+**默认值：** `0.1`
+
+最小缩放比例（10%）。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  minScale: 0.5 // 最小 50% 缩放
+});
+```
+
+### `maxScale`
+
+**类型：** `number`
+**默认值：** `5`
+
+最大缩放比例（500%）。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  maxScale: 3 // 最大 300% 缩放
+});
+```
+
+## 按钮配置
+
+### `buttons`
+
+**类型：** `object`
+
+工具栏按钮配置。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  buttons: {
+    zoomIn: true,         // 显示放大按钮
+    zoomOut: true,        // 显示缩小按钮
+    rotateLeft: true,     // 显示向左旋转按钮
+    rotateRight: true,    // 显示向右旋转按钮
+    reset: true,          // 显示重置按钮
+    download: true,       // 显示下载按钮
+    fullscreen: true,     // 显示全屏按钮
+    prev: true,           // 显示上一张按钮
+    next: true,           // 显示下一张按钮
+    close: true,          // 显示关闭按钮
+    topClose: true,       // 显示右上角关闭按钮
+    thumbnails: true,     // 显示缩略图导航
+    info: true,           // 显示信息面板按钮
+    originalSize: true    // 显示原始尺寸按钮
+  }
+});
+```
+
+## 自定义按钮
+
+### `customButtons`
+
+**类型：** `Array<[string, () => void]>`
+
+要添加到工具栏的自定义按钮数组。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  customButtons: [
+    ['🔍', () => console.log('搜索按钮点击')],
+    ['📌', () => console.log('固定按钮点击')]
+  ]
+});
+```
+
+## 图片信息配置
+
+### `imageInfo`
+
+**类型：** `object`
+
+图片信息显示配置。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  imageInfo: {
+    visible: false,      // 默认显示信息面板
+    showName: true,      // 显示文件名
+    showDimensions: true // 显示图片尺寸
+  }
+});
+```
+
+## 国际化
+
+### `i18n`
+
+**类型：** `object`
+
+国际化配置。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  i18n: {
+    info: {
+      name: '名称:',
+      dimensions: '尺寸:',
+      shortcuts: '快捷键',
+      zoomIn: '放大:',
+      zoomOut: '缩小:',
+      prev: '上一张:',
+      next: '下一张:',
+      reset: '重置:',
+      fullscreen: '全屏:',
+      info: '信息:',
+      close: '关闭:'
+    },
+    buttons: {
+      prev: '上一张 (←)',
+      next: '下一张 (→)',
+      close: '关闭 (Esc)',
+      loading: '加载中...',
+    }
+  }
+});
+```
+
+## 主题配置
+
+### `theme`
+
+**类型：** `object`
+
+主题自定义选项。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  theme: {
+    // 背景
+    viewerBgColor: 'rgba(0, 0, 0, 0.9)',
+    
+    // 工具栏
+    toolbarBgColor: 'rgba(30, 30, 30, 0.8)',
+    toolbarBorderRadius: '8px',
+    toolbarPadding: '10px 15px',
+    toolbarBottom: '20px',
+    
+    // 按钮
+    buttonBgColor: 'rgba(50, 50, 50, 0.7)',
+    buttonHoverBg: 'rgba(80, 80, 80, 0.7)',
+    buttonSize: '45px',
+    buttonFontSize: '20px',
+    buttonBorderRadius: '50%',
+    
+    // 导航按钮
+    navButtonBgColor: 'rgba(50, 50, 50, 0.7)',
+    navButtonHoverBg: 'rgba(80, 80, 80, 0.7)',
+    navButtonSize: '55px',
+    navButtonFontSize: '20px',
+    navButtonBorderRadius: '50%',
+    
+    // 顶部关闭按钮
+    topCloseBtnSize: '50px',
+    topCloseBtnTop: '20px',
+    topCloseBtnRight: '20px',
+    topCloseBtnFontSize: '24px',
+    topCloseBtnBgColor: 'rgba(50, 50, 50, 0.7)',
+    topCloseBtnHoverBg: 'rgba(80, 80, 80, 0.7)',
+    
+    // 信息面板
+    infoBgColor: 'rgba(30, 30, 30, 0.8)',
+    infoBorderRadius: '12px',
+    infoPadding: '10px 15px',
+    infoFontSize: '13px',
+    infoTop: '70px',
+    infoLeft: '20px',
+    
+    // 缩放指示器
+    zoomIndicatorBg: 'rgba(0, 0, 0, 0.7)',
+    zoomIndicatorBorderRadius: '18px',
+    zoomIndicatorPadding: '6px 12px',
+    zoomIndicatorFontSize: '14px',
+    zoomIndicatorTop: '20px',
+    zoomIndicatorLeft: '20px',
+    
+    // 缩略图
+    thumbItemWidth: '80px',
+    thumbItemHeight: '50px',
+    thumbGap: '10px',
+    thumbPadding: '15px',
+    thumbMaxWidth: '70%',
+    
+    // 通用
+    activeColor: 'rgba(100, 150, 255, 0.8)',
+    textColor: 'rgba(255, 255, 255, 0.9)',
+    shadowColor: 'rgba(0, 0, 0, 0.2)',
+    transitionSpeed: '0.3s'
+  }
+});
+```
+
+## 事件回调
+
+### `show`
+
+**类型：** `(container: HTMLElement) => void`
+
+查看器显示时的回调。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  show: function(container) {
+    console.log('查看器显示:', container);
+  }
+});
+```
+
+### `close`
+
+**类型：** `() => void`
+
+查看器关闭时的回调。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  close: function() {
+    console.log('查看器关闭');
+  }
+});
+```
+
+### `change`
+
+**类型：** `(currentIndex: number, direction: 'prev' | 'next') => void`
+
+图片改变时的回调。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg'],
+  change: function(currentIndex, direction) {
+    console.log('图片改变:', currentIndex, direction);
+  }
+});
+```
+
+## 完整配置示例
+
+```javascript
+const viewer = new ImagesViewer({
+  // 基本设置
+  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
+  closeOnMaskClick: true,
+  loop: true,
+  preloadCount: 3,
+  maxCacheSize: 30,
+  minScale: 0.1,
+  maxScale: 5,
+  
+  // 按钮
+  buttons: {
+    zoomIn: true,
+    zoomOut: true,
+    rotateLeft: true,
+    rotateRight: true,
+    reset: true,
+    download: true,
+    fullscreen: true,
+    prev: true,
+    next: true,
+    close: true,
+    topClose: true,
+    thumbnails: true,
+    info: true,
+    originalSize: true
+  },
+  
+  // 自定义按钮
+  customButtons: [
+    ['🔍', () => console.log('搜索')],
+    ['📌', () => console.log('固定')]
+  ],
+  
+  // 图片信息
+  imageInfo: {
+    visible: false,
+    showName: true,
+    showDimensions: true
+  },
+  
+  // 国际化
+  i18n: {
+    info: {
+      name: '名称:',
+      dimensions: '尺寸:',
+      shortcuts: '快捷键',
+      zoomIn: '放大:',
+      zoomOut: '缩小:',
+      prev: '上一张:',
+      next: '下一张:',
+      reset: '重置:',
+      fullscreen: '全屏:',
+      info: '信息:',
+      close: '关闭:'
+    },
+    buttons: {
+      prev: '上一张 (←)',
+      next: '下一张 (→)',
+      close: '关闭 (Esc)',
+      loading: '加载中...',
+    }
+  },
+  
+  // 主题
+  theme: {
+    viewerBgColor: 'rgba(0, 0, 0, 0.9)',
+    toolbarBgColor: 'rgba(30, 30, 30, 0.8)',
+    buttonBgColor: 'rgba(50, 50, 50, 0.7)',
+    textColor: 'rgba(255, 255, 255, 0.9)'
+  },
+  
+  // 事件回调
+  show: function(container) {
+    console.log('查看器显示');
+  },
+  close: function() {
+    console.log('查看器关闭');
+  },
+  change: function(index, direction) {
+    console.log('图片改变:', index, direction);
+  }
+});
+```

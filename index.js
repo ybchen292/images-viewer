@@ -49,6 +49,7 @@ class ImagesViewer {
           prev: '上一张 (←)',
           next: '下一张 (→)',
           close: '关闭 (Esc)',
+          loading: '加载中...',
         },
       },
       theme: {
@@ -613,7 +614,6 @@ class ImagesViewer {
           -ms-overflow-style: none;
           z-index: 10;
           box-shadow: 0 3px 15px var(--shadow-color);
-          max-width: calc(100% - 40px);
           -webkit-overflow-scrolling: touch;
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -712,7 +712,7 @@ class ImagesViewer {
     this.loading.className = 'images-viewer-loading';
     this.loading.innerHTML = `
         <div class="images-viewer-loading-spinner"></div>
-        <div>loading...</div>
+        <div>${this.options.i18n.buttons.loading}</div>
       `;
     this.imageContainer.appendChild(this.loading);
 
@@ -2049,4 +2049,6 @@ function throttle(func, delay) {
     }
   };
 }
+
+// 导出ImagesViewer类
 export default ImagesViewer;

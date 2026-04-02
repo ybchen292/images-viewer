@@ -178,6 +178,7 @@ const viewer = new ImagesViewer({
       prev: 'Previous (←)',
       next: 'Next (→)',
       close: 'Close (Esc)',
+      loading: 'Loading...',
     },
   },
 
@@ -442,6 +443,7 @@ const viewer = new ImagesViewer({
       prev: 'Previous (←)',
       next: 'Next (→)',
       close: 'Close (Esc)',
+      loading: 'Loading...',
     },
   },
 });

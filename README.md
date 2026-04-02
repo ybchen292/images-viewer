@@ -178,6 +178,7 @@ const viewer = new ImagesViewer({
       prev: '上一张 (←)',
       next: '下一张 (→)',
       close: '关闭 (Esc)',
+      loading: '加载中...',
     },
   },
 
@@ -442,6 +443,7 @@ const viewer = new ImagesViewer({
       prev: 'Previous (←)',
       next: 'Next (→)',
       close: 'Close (Esc)',
+      loading: 'Loading...',
     },
   },
 });
