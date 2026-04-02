@@ -633,6 +633,7 @@ class ImagesViewer {
           transition: all 0.2s;
           z-index: 11;
           position: relative;
+          opacity: 0.6;
         }
 
         .images-viewer-thumbnail-item img {
@@ -643,7 +644,9 @@ class ImagesViewer {
 
         .images-viewer-thumbnail-item.active {
           border-color: var(--active-color);
-          transform: scale(1.05);
+          transform: scale(1.2);
+          opacity: 1;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
         }
 
         /* 缩略图加载状态 */
@@ -683,6 +686,7 @@ class ImagesViewer {
 
         .images-viewer-thumbnail-item:hover {
           transform: scale(1.05);
+          opacity: 0.9;
         }
       `;
     document.head.appendChild(style);
