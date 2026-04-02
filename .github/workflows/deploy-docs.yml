@@ -11,7 +11,11 @@ on:
       - package.json
       - package-lock.json
       - docs/.vitepress/config.js
-
+# 设置 GITHUB_TOKEN 的权限，以允许部署到 GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 jobs:
   deploy:
     runs-on: ubuntu-latest
