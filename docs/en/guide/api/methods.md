@@ -4,13 +4,13 @@ title: Methods
 
 # Methods
 
-This page documents all methods available in the ImagesViewer class.
+Methods available in the ImagesViewer class.
 
 ## Navigation Methods
 
 ### `next()`
 
-Loads the next image in the sequence.
+Loads the next image.
 
 **Returns:** `void`
 
@@ -21,7 +21,7 @@ viewer.next();
 
 ### `prev()`
 
-Loads the previous image in the sequence.
+Loads the previous image.
 
 **Returns:** `void`
 
@@ -71,7 +71,7 @@ viewer.zoom(-0.1);
 Rotates the current image by the specified degrees.
 
 **Parameters:**
-- `degrees`: Rotation angle in degrees (positive for clockwise, negative for counter-clockwise)
+- `degrees`: Rotation angle (positive for clockwise, negative for counter-clockwise)
 
 **Returns:** `void`
 
@@ -89,21 +89,11 @@ Resets the current image to its original state (zoom, rotation, position).
 
 **Returns:** `void`
 
-```javascript
-// Reset image transform
-viewer.reset();
-```
-
 ### `showOriginalSize()`
 
 Displays the current image at its original size.
 
 **Returns:** `void`
-
-```javascript
-// Show original size
-viewer.showOriginalSize();
-```
 
 ## View Control Methods
 
@@ -113,32 +103,17 @@ Toggles fullscreen mode.
 
 **Returns:** `void`
 
-```javascript
-// Toggle fullscreen
-viewer.toggleFullscreen();
-```
-
 ### `toggleImageInfo()`
 
 Toggles the image information panel.
 
 **Returns:** `void`
 
-```javascript
-// Toggle image info
-viewer.toggleImageInfo();
-```
-
 ### `close()`
 
 Closes the viewer and cleans up resources.
 
 **Returns:** `void`
-
-```javascript
-// Close viewer
-viewer.close();
-```
 
 ## Utility Methods
 
@@ -147,11 +122,6 @@ viewer.close();
 Downloads the current image.
 
 **Returns:** `void`
-
-```javascript
-// Download current image
-viewer.downloadImage();
-```
 
 ## Usage Examples
 
@@ -202,27 +172,5 @@ document.getElementById('rotate-right').addEventListener('click', () => {
 
 document.getElementById('reset').addEventListener('click', () => {
   viewer.reset();
-});
-```
-
-### Programmatic Control
-
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
-  show: function() {
-    // Auto-navigate through images
-    let currentIndex = 0;
-    const interval = setInterval(() => {
-      currentIndex = (currentIndex + 1) % 3;
-      viewer.loadCurrentImage(currentIndex);
-    }, 3000);
-
-    // Clear interval when viewer closes
-    setTimeout(() => {
-      clearInterval(interval);
-      viewer.close();
-    }, 15000);
-  }
 });
 ```

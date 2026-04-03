@@ -1,11 +1,191 @@
 /**
+ * 图片对象类型
+ */
+export interface ImageObject {
+  /**
+   * 图片 URL
+   */
+  url: string;
+  /**
+   * 图片标题
+   */
+  title?: string;
+  /**
+   * 缩略图 URL
+   */
+  thumbnail?: string;
+  /**
+   * 其他自定义属性
+   */
+  [key: string]: any;
+}
+
+/**
+ * 旋转事件参数
+ */
+export interface RotateEventData {
+  /**
+   * 当前图片数据
+   */
+  image: string | ImageObject;
+  /**
+   * 当前图片索引
+   */
+  index: number;
+  /**
+   * 当前旋转角度
+   */
+  rotation: number;
+  /**
+   * 旧的旋转角度
+   */
+  oldRotation: number;
+}
+
+/**
+ * 拖动事件参数
+ */
+export interface DragEventData {
+  /**
+   * 当前图片数据
+   */
+  image: string | ImageObject;
+  /**
+   * 当前图片索引
+   */
+  index: number;
+  /**
+   * 当前 X 轴偏移量
+   */
+  translateX: number;
+  /**
+   * 当前 Y 轴偏移量
+   */
+  translateY: number;
+}
+
+/**
+ * 缩放事件参数
+ */
+export interface ZoomEventData {
+  /**
+   * 当前图片数据
+   */
+  image: string | ImageObject;
+  /**
+   * 当前图片索引
+   */
+  index: number;
+  /**
+   * 当前缩放比例
+   */
+  scale: number;
+  /**
+   * 旧的缩放比例
+   */
+  oldScale: number;
+}
+
+/**
+ * 信息栏自定义函数参数
+ */
+export interface InfoTextParams {
+  /**
+   * 当前图片数据
+   */
+  image: string | ImageObject;
+  /**
+   * 当前图片索引
+   */
+  index: number;
+  /**
+   * 图片元数据
+   */
+  metadata: {
+    name: string;
+    width: number;
+    height: number;
+  };
+  /**
+   * 当前缩放比例
+   */
+  scale: number;
+  /**
+   * 当前旋转角度
+   */
+  rotation: number;
+}
+
+/**
+ * 页数显示自定义函数参数
+ */
+export interface CounterParams {
+  /**
+   * 当前图片数据
+   */
+  image: string | ImageObject;
+  /**
+   * 当前图片索引
+   */
+  index: number;
+  /**
+   * 当前页码（从1开始）
+   */
+  currentPage: number;
+  /**
+   * 总页数
+   */
+  totalPages: number;
+  /**
+   * 当前缩放比例
+   */
+  scale: number;
+  /**
+   * 当前旋转角度
+   */
+  rotation: number;
+}
+
+/**
+ * 缩放指数自定义函数参数
+ */
+export interface ZoomIndicatorParams {
+  /**
+   * 当前图片数据
+   */
+  image: string | ImageObject;
+  /**
+   * 当前图片索引
+   */
+  index: number;
+  /**
+   * 当前缩放比例
+   */
+  scale: number;
+  /**
+   * 缩放百分比（scale × 100）
+   */
+  percentage: number;
+  /**
+   * 当前旋转角度
+   */
+  rotation: number;
+}
+
+/**
  * ImagesViewer 配置选项
  */
 interface ImagesViewerOptions {
   /**
    * 图片数组或单张图片 URL
    */
-  images?: string | string[];
+  images?: string | string[] | ImageObject[];
+
+  /**
+   * 初始图片索引
+   * @default 0
+   */
+  initialIndex?: number;
 
   /**
    * 点击遮罩关闭查看器
@@ -203,19 +383,49 @@ interface ImagesViewerOptions {
   /**
    * 回调函数 - 查看器显示时触发
    */
-  show?: (container: HTMLElement) => void;
+  onShow?: (container: HTMLElement) => void;
 
   /**
    * 回调函数 - 查看器关闭时触发
    */
-  close?: () => void;
+  onClose?: () => void;
 
   /**
    * 回调函数 - 图片切换时触发
    * @param currentIndex 当前图片索引
    * @param direction 切换方向 'prev' | 'next'
    */
-  change?: (currentIndex: number, direction: 'prev' | 'next') => void;
+  onChange?: (currentIndex: number, direction: 'prev' | 'next') => void;
+
+  /**
+   * 旋转事件回调
+   */
+  onRotate?: (data: RotateEventData) => void;
+
+  /**
+   * 拖动事件回调
+   */
+  onDrag?: (data: DragEventData) => void;
+
+  /**
+   * 缩放事件回调
+   */
+  onZoom?: (data: ZoomEventData) => void;
+
+  /**
+   * 信息栏自定义函数
+   */
+  onInfo?: (data: InfoTextParams) => string | null | undefined;
+
+  /**
+   * 页数显示自定义函数
+   */
+  onCounter?: (data: CounterParams) => string | null | undefined;
+
+  /**
+   * 缩放指数自定义函数
+   */
+  onZoomIndicator?: (data: ZoomIndicatorParams) => string | null | undefined;
 }
 
 /**

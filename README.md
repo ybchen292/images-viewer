@@ -21,10 +21,14 @@
 - 🌍 **国际化支持** - 可自定义界面语言
 - 📦 **缓存管理** - 智能图片缓存，减少重复请求
 - ⚡ **性能优化** - 懒加载和预加载策略
+- 🏷️ **图片对象支持** - 支持对象格式的图片配置，包含 url、title、thumbnail 等属性
+- 🔢 **初始索引** - 可指定初始显示的图片索引
+- 📞 **事件监听** - 支持旋转、拖动、缩放等事件的监听
+- 🎨 **自定义显示** - 可自定义信息栏、页数、缩放指数的显示内容
 
 ## 安装和使用
 
-### 简单用法
+### 基本用法
 
 ```javascript
 // 单张图片
@@ -37,6 +41,24 @@ const viewer2 = new ImagesViewer({
 
 // 数组形式
 const viewer3 = new ImagesViewer(['img1.jpg', 'img2.jpg']);
+
+// 图片对象格式
+const viewer4 = new ImagesViewer({
+  images: [
+    {
+      url: 'https://example.com/image1.jpg',
+      title: '风景图片',
+      thumbnail: 'https://example.com/thumb1.jpg',
+      category: 'nature'
+    },
+    {
+      url: 'https://example.com/image2.jpg',
+      title: '建筑图片',
+      thumbnail: 'https://example.com/thumb2.jpg',
+      category: 'architecture'
+    }
+  ]
+});
 ```
 
 ### npm
@@ -137,18 +159,57 @@ const viewer = new ImagesViewer({
     ['🔍', function() { console.log('自定义按钮点击'); }]
   ],
 
+  // 初始图片索引
+  initialIndex: 0,
+
   // 事件回调
-  show: function(container) {
+  onShow: function(container) {
     console.log('查看器显示');
   },
 
-  close: function() {
+  onClose: function() {
     console.log('查看器关闭');
   },
 
-  change: function(currentIndex, direction) {
+  onChange: function(currentIndex, direction) {
     console.log('图片切换:', currentIndex, direction);
-  }
+  },
+
+  // 旋转事件
+  onRotate: function(data) {
+    console.log('图片旋转:', data);
+  },
+
+  // 拖动事件
+  onDrag: function(data) {
+    console.log('图片拖动:', data);
+  },
+
+  // 缩放事件
+  onZoom: function(data) {
+    console.log('图片缩放:', data);
+  },
+
+  // 信息栏自定义函数
+  onInfo: function(data) {
+    return `
+      <div class="custom-info">
+        <p>图片 ${data.index + 1} / ${data.totalPages}</p>
+        <p>缩放: ${(data.scale * 100).toFixed(0)}%</p>
+        <p>旋转: ${data.rotation}°</p>
+      </div>
+    `;
+  },
+
+  // 页数显示自定义函数
+  onCounter: function(data) {
+    return `第 ${data.currentPage} 张 / 共 ${data.totalPages} 张`;
+  },
+
+  // 缩放指数自定义函数
+  onZoomIndicator: function(data) {
+    return `缩放: ${data.percentage}%`;
+  },
 
   // 图片信息显示
   imageInfo: {
@@ -393,11 +454,11 @@ const viewer = new ImagesViewer({
       },
     ],
   ],
-  change: (index, direction) => {
+  onChange: (index, direction) => {
     // direction: 'prev' | 'next'
     console.log(index, direction);
   },
-  show: dom => {
+  onShow: dom => {
     // 自定义按钮
     const toolbar = dom.querySelector('.images-viewer-toolbar');
     const button = document.createElement('button');
@@ -412,9 +473,9 @@ const viewer = new ImagesViewer({
       // e.stopPropagation();
     });
     toolbar.appendChild(button);
-    console.log('show', dom);
+    console.log('onShow', dom);
   },
-  close: () => {
+  onClose: () => {
     console.log('close');
   },
 });

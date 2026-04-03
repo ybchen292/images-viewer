@@ -125,7 +125,7 @@ const viewer = new ImagesViewer({
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
-  show: function(container) {
+  onShow: function(container) {
     // 访问 DOM 元素
     const toolbar = container.querySelector('.images-viewer-toolbar');
     
@@ -250,7 +250,7 @@ const viewer = new ImagesViewer({
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg'],
-  show: function(container) {
+  onShow: function(container) {
     console.log('查看器打开');
     // 添加自定义事件监听器
     container.addEventListener('click', (e) => {
@@ -259,11 +259,11 @@ const viewer = new ImagesViewer({
       }
     });
   },
-  close: function() {
+  onClose: function() {
     console.log('查看器关闭');
     // 清理资源
   },
-  change: function(index, direction) {
+  onChange: function(index, direction) {
     console.log(`切换到图片 ${index} (${direction})`);
     // 跟踪图片视图
   }

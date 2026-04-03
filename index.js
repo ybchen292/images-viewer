@@ -2,6 +2,7 @@ class ImagesViewer {
   constructor(options) {
     // 默认配置
     this.defaultOptions = {
+      initialIndex: 0,
       closeOnMaskClick: false,
       loop: true,
       preloadCount: 3,
@@ -112,7 +113,7 @@ class ImagesViewer {
         thumbItemHeight: '45px',
         thumbGap: '10px',
         thumbPadding: '15px',
-        thumbMaxWidth: '70%',
+        thumbMaxWidth: '90%',
       },
     };
 
@@ -138,7 +139,8 @@ class ImagesViewer {
     }
 
     // 初始化状态变量
-    this.currentIndex = 0;
+    const initialIndex = Math.max(0, Math.min(this.options.initialIndex || 0, this.images.length - 1));
+    this.currentIndex = initialIndex;
     this.scale = 1.0;
     this.rotation = 0;
     this.translateX = 0;
@@ -153,6 +155,8 @@ class ImagesViewer {
     this.imageMetadata = [];
     this.loadedImages = new Map();
     this.loadingImages = new Map();
+    this.loadedThumbnails = new Map();
+    this.loadingThumbnails = new Map();
 
     // 双击相关状态
     this.lastTapTime = 0;
@@ -201,7 +205,7 @@ class ImagesViewer {
     this.bindEvents();
 
     // 显示预览器
-    this.show();
+    this.onShow();
 
     // 加载第一张图片
     this.loadCurrentImage();
@@ -297,7 +301,7 @@ class ImagesViewer {
           background-color: var(--viewer-bg-color);
         }
 
-        /* 修复图片容器样式 - 确保居中 */
+        /* 图片容器样式 */
         .images-viewer-image-container {
           position: absolute;
           top: 0;
@@ -311,7 +315,7 @@ class ImagesViewer {
           overflow: hidden;
         }
 
-        /* 修复图片样式 - 确保居中 */
+        /* 图片样式 */
         .images-viewer-image {
           position: relative;
           object-fit: contain;
@@ -391,7 +395,6 @@ class ImagesViewer {
           justify-content: center;
           transition: all var(--transition-speed);
           z-index: 10;
-          backdrop-filter: blur(4px);
           box-shadow: 0 2px 8px var(--shadow-color);
         }
 
@@ -413,7 +416,6 @@ class ImagesViewer {
           z-index: 10;
           min-width: 60px;
           text-align: center;
-          backdrop-filter: blur(4px);
           box-shadow: 0 2px 8px var(--shadow-color);
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -430,7 +432,6 @@ class ImagesViewer {
           font-size: var(--info-font-size);
           z-index: 10;
           max-width: calc(100% - 40px);
-          backdrop-filter: blur(4px);
           box-shadow: 0 4px 12px var(--shadow-color);
           display: none;
           border: 1px solid rgba(255, 255, 255, 0.1);
@@ -482,9 +483,25 @@ class ImagesViewer {
           border-radius: 18px;
           font-size: 14px;
           z-index: 10;
-          backdrop-filter: blur(4px);
           box-shadow: 0 2px 8px var(--shadow-color);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 图片标题显示 */
+        .images-viewer-image-title {
+          position: absolute;
+          top: 60px;
+          left: 50%;
+          transform: translateX(-50%);
+          color: var(--text-color);
+          padding: 4px 12px;
+          border-radius: 18px;
+          font-size: 12px;
+          z-index: 10;
+          max-width: 80%;
+          text-align: center;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         /* 导航按钮 */
@@ -516,7 +533,6 @@ class ImagesViewer {
           transition: all 0.2s;
           pointer-events: auto;
           opacity: 0.9;
-          backdrop-filter: blur(4px);
           box-shadow: 0 2px 8px var(--shadow-color);
           z-index: 6;
         }
@@ -540,7 +556,6 @@ class ImagesViewer {
           left: 50%;
           transform: translateX(-50%);
           background-color: var(--toolbar-bg-color);
-          backdrop-filter: blur(12px);
           padding: var(--toolbar-padding);
           border-radius: var(--toolbar-border-radius);
           display: flex;
@@ -605,7 +620,6 @@ class ImagesViewer {
           transform: translateX(-50%);
           padding: 10px var(--thumb-padding);
           background-color: var(--toolbar-bg-color);
-          backdrop-filter: blur(8px);
           border-radius: 12px;
           display: flex;
           gap: var(--thumb-gap);
@@ -685,7 +699,7 @@ class ImagesViewer {
         }
 
         .images-viewer-thumbnail-item:hover {
-          transform: scale(1.05);
+          transform: scale(1.2);
           opacity: 0.9;
         }
       `;
@@ -748,6 +762,11 @@ class ImagesViewer {
       this.counter.className = 'images-viewer-image-counter';
       this.container.appendChild(this.counter);
     }
+
+    // 图片标题显示
+    this.imageTitle = document.createElement('div');
+    this.imageTitle.className = 'images-viewer-image-title';
+    this.container.appendChild(this.imageTitle);
 
     // 左右导航按钮
     if (this.images.length > 1 && (this.options.buttons.prev || this.options.buttons.next)) {
@@ -965,7 +984,8 @@ class ImagesViewer {
   }
 
   createThumbnailItem(container, index) {
-    const url = this.images[index];
+    const thumbnailUrl = this.getThumbnailUrl(index);
+    const imageUrl = this.getImageUrl(index);
     const thumbItem = document.createElement('div');
     thumbItem.className = `images-viewer-thumbnail-item ${index === this.currentIndex ? 'active' : ''}`;
     thumbItem.dataset.index = index;
@@ -979,12 +999,12 @@ class ImagesViewer {
     loadingContainer.innerHTML = '<div class="loading-spinner"></div>';
     thumbItem.appendChild(loadingContainer);
 
-    // 如果图片已加载，使用缓存
-    if (this.loadedImages.has(url)) {
-      thumbImg.src = this.loadedImages.get(url).src;
+    // 优先使用缩略图缓存
+    if (this.loadedThumbnails.has(thumbnailUrl)) {
+      thumbImg.src = this.loadedThumbnails.get(thumbnailUrl).src;
       loadingContainer.remove();
-    } else if (this.loadingImages.has(url)) {
-      // 正在加载中，等待加载完成
+    } else if (this.loadingThumbnails.has(thumbnailUrl)) {
+      // 缩略图正在加载中，等待加载完成
       loadingContainer.style.display = 'flex';
       thumbImg.onload = () => {
         loadingContainer.remove();
@@ -996,31 +1016,30 @@ class ImagesViewer {
         thumbImg.onload = null;
         thumbImg.onerror = null;
       };
-      thumbImg.src = url;
+      thumbImg.src = thumbnailUrl;
+    } else if (this.loadedImages.has(imageUrl)) {
+      // 使用实际图片缓存作为后备
+      thumbImg.src = this.loadedImages.get(imageUrl).src;
+      loadingContainer.remove();
     } else {
-      // 未加载，加载缩略图时同时缓存
-      this.loadingImages.set(url, thumbImg);
+      // 未加载，加载缩略图
+      this.loadingThumbnails.set(thumbnailUrl, thumbImg);
       loadingContainer.style.display = 'flex';
       thumbImg.onload = () => {
-        this.addToCache(url, thumbImg);
-        this.loadingImages.delete(url);
-        this.imageMetadata[index] = {
-          name: this.extractFileName(url),
-          width: thumbImg.naturalWidth || thumbImg.width,
-          height: thumbImg.naturalHeight || thumbImg.height,
-        };
+        this.loadedThumbnails.set(thumbnailUrl, thumbImg);
+        this.loadingThumbnails.delete(thumbnailUrl);
         loadingContainer.remove();
         thumbImg.onload = null;
         thumbImg.onerror = null;
       };
       thumbImg.onerror = () => {
-        this.loadingImages.delete(url);
+        this.loadingThumbnails.delete(thumbnailUrl);
         loadingContainer.remove();
         thumbImg.onload = null;
         thumbImg.onerror = null;
-        console.error(`Thumbnail loading failed: ${url}`);
+        console.warn(`Thumbnail load failed: ${thumbnailUrl}`);
       };
-      thumbImg.src = url;
+      thumbImg.src = thumbnailUrl;
     }
 
     thumbItem.appendChild(thumbImg);
@@ -1036,6 +1055,27 @@ class ImagesViewer {
     });
 
     container.appendChild(thumbItem);
+  }
+
+  updateThumbnailDisplay(index) {
+    if (!this.thumbContainer) return;
+
+    const thumbnailItem = this.thumbContainer.querySelector(`[data-index="${index}"]`);
+    if (thumbnailItem) {
+      const thumbnailUrl = this.getThumbnailUrl(index);
+      const thumbImg = thumbnailItem.querySelector('img');
+
+      if (thumbImg && this.loadedThumbnails.has(thumbnailUrl)) {
+        const cachedThumb = this.loadedThumbnails.get(thumbnailUrl);
+        thumbImg.src = cachedThumb.src;
+
+        // 移除加载状态
+        const loadingContainer = thumbnailItem.querySelector('.images-viewer-thumbnail-loading');
+        if (loadingContainer) {
+          loadingContainer.remove();
+        }
+      }
+    }
   }
 
   // 更新图片变换 - 修复居中问题
@@ -1082,6 +1122,7 @@ class ImagesViewer {
 
   parseImageOptions(options) {
     this.images = [];
+    this.thumbnails = [];
 
     if (typeof options === 'string') {
       this.images = [options];
@@ -1089,9 +1130,59 @@ class ImagesViewer {
       this.images = options.filter(url => typeof url === 'string' && url.trim() !== '');
     } else if (typeof options === 'object') {
       if (options.images && Array.isArray(options.images)) {
-        this.images = options.images.filter(url => typeof url === 'string' && url.trim() !== '');
+        this.images = options.images
+          .map(item => {
+            if (typeof item === 'string') {
+              return item;
+            } else if (typeof item === 'object' && item.url) {
+              // 处理缩略图参数
+              if (item.thumbnail) {
+                this.thumbnails.push(item.thumbnail);
+              }
+              return item;
+            }
+            return null;
+          })
+          .filter(Boolean);
       }
     }
+  }
+
+  getImageUrl(index) {
+    const item = this.images[index];
+    if (typeof item === 'string') {
+      return item;
+    } else if (typeof item === 'object') {
+      if (typeof item.url === 'function') {
+        return item.url(item, index);
+      } else if (item.url) {
+        return item.url;
+      }
+    }
+    return '';
+  }
+
+  getThumbnailUrl(index) {
+    if (this.thumbnails[index]) {
+      const thumbnail = this.thumbnails[index];
+      if (typeof thumbnail === 'function') {
+        return thumbnail(this.images[index], index);
+      }
+      return thumbnail;
+    }
+    return this.getImageUrl(index);
+  }
+
+  getImageTitle(index) {
+    const item = this.images[index];
+    if (typeof item === 'object') {
+      if (typeof item.title === 'function') {
+        return item.title(item, index);
+      } else if (item.title) {
+        return item.title;
+      }
+    }
+    return '';
   }
 
   preloadImages() {
@@ -1120,7 +1211,7 @@ class ImagesViewer {
   }
 
   loadImageAtIndex(index) {
-    const url = this.images[index];
+    const url = this.getImageUrl(index);
     if (!url || this.loadedImages.has(url) || this.loadingImages.has(url)) return;
 
     const img = new Image();
@@ -1176,7 +1267,33 @@ class ImagesViewer {
 
     // 更新计数器
     if (this.images.length > 1 && this.counter) {
-      this.counter.textContent = `${this.currentIndex + 1} / ${this.images.length}`;
+      let onCounter = null;
+      // 使用自定义函数生成页数显示
+      if (this.options.onCounter) {
+        onCounter = this.options.onCounter({
+          image: this.images[this.currentIndex],
+          index: this.currentIndex,
+          currentPage: this.currentIndex + 1,
+          totalPages: this.images.length,
+          scale: this.scale,
+          rotation: this.rotation,
+        });
+      }
+      if (onCounter) {
+        this.counter.innerHTML = onCounter;
+      } else {
+        // 没有自定义函数，使用默认显示
+        this.counter.textContent = `${this.currentIndex + 1} / ${this.images.length}`;
+      }
+    }
+
+    const title = this.getImageTitle(this.currentIndex);
+    // 更新图片标题显示
+    if (this.imageTitle && title) {
+      this.imageTitle.innerHTML = title;
+      this.imageTitle.style.display = 'block';
+    } else {
+      this.imageTitle.style.display = 'none';
     }
 
     // 更新导航按钮状态
@@ -1190,6 +1307,12 @@ class ImagesViewer {
     this.translateX = 0;
     this.translateY = 0;
 
+    // 检查当前图片缓存状态，如果未缓存则立即加载
+    const currentUrl = this.getImageUrl(this.currentIndex);
+    if (!this.loadedImages.has(currentUrl) && !this.loadingImages.has(currentUrl)) {
+      this.loadImageAtIndex(this.currentIndex);
+    }
+
     // 动态预加载相邻图片
     this.preloadAdjacentImages();
 
@@ -1201,13 +1324,46 @@ class ImagesViewer {
     const startIndex = Math.max(0, this.currentIndex - preloadRange);
     const endIndex = Math.min(this.images.length - 1, this.currentIndex + preloadRange);
 
+    // 优先预加载缩略图
+    for (let i = startIndex; i <= endIndex; i++) {
+      this.loadThumbnailAtIndex(i);
+    }
+
+    // 预加载实际图片
     for (let i = startIndex; i <= endIndex; i++) {
       this.loadImageAtIndex(i);
     }
   }
 
+  loadThumbnailAtIndex(index) {
+    const thumbnailUrl = this.getThumbnailUrl(index);
+    if (!thumbnailUrl || this.loadedThumbnails.has(thumbnailUrl) || this.loadingThumbnails.has(thumbnailUrl)) return;
+
+    const img = new Image();
+
+    img.onload = () => {
+      this.loadedThumbnails.set(thumbnailUrl, img);
+      this.loadingThumbnails.delete(thumbnailUrl);
+      // 更新对应的缩略图显示
+      this.updateThumbnailDisplay(index);
+      img.onload = null;
+      img.onerror = null;
+    };
+
+    img.onerror = () => {
+      this.loadingThumbnails.delete(thumbnailUrl);
+      img.onload = null;
+      img.onerror = null;
+      console.error(`Thumbnail load failed: ${thumbnailUrl}`);
+    };
+
+    img.crossOrigin = 'anonymous';
+    img.src = thumbnailUrl;
+    this.loadingThumbnails.set(thumbnailUrl, img);
+  }
+
   isImageLoaded() {
-    const currentUrl = this.images[this.currentIndex];
+    const currentUrl = this.getImageUrl(this.currentIndex);
     const isLoaded = this.loadedImages.has(currentUrl);
     const isLoading = this.loadingImages.has(currentUrl);
 
@@ -1216,6 +1372,7 @@ class ImagesViewer {
 
     // 如果图片已加载，直接显示
     if (isLoaded) {
+      this.image.src = '';
       const cachedImg = this.loadedImages.get(currentUrl);
       // 使用 Canvas 绘制已加载的图片，完全避免网络请求
       const canvas = document.createElement('canvas');
@@ -1239,7 +1396,7 @@ class ImagesViewer {
         }
       });
 
-      // 立即使用缓存的尺寸信息进行布局
+      // 立即使用缓存的尺寸信息进行布局;
       const metadata = this.imageMetadata[this.currentIndex];
       if (metadata) {
         this.fitImageToScreen(metadata.width, metadata.height);
@@ -1277,8 +1434,6 @@ class ImagesViewer {
         width: img.naturalWidth || img.width,
         height: img.naturalHeight || img.height,
       };
-
-      // 加载完成后重新调用
       this.isImageLoaded();
     };
 
@@ -1296,6 +1451,23 @@ class ImagesViewer {
 
   updateZoomIndicator() {
     const percentage = Math.round(this.scale * 100);
+
+    // 使用自定义函数生成缩放指数显示
+    if (this.options.onZoomIndicator) {
+      const onZoomIndicator = this.options.onZoomIndicator({
+        image: this.images[this.currentIndex],
+        index: this.currentIndex,
+        scale: this.scale,
+        percentage: percentage,
+        rotation: this.rotation,
+      });
+
+      if (onZoomIndicator) {
+        this.zoomIndicator.innerHTML = onZoomIndicator;
+        return;
+      }
+    }
+    // 没有自定义函数，使用默认显示
     this.zoomIndicator.textContent = `${percentage}%`;
   }
 
@@ -1308,6 +1480,23 @@ class ImagesViewer {
     const i18n = this.options.i18n;
 
     let infoHtml = '';
+
+    // 使用自定义函数生成信息栏内容
+    if (this.options.onInfo) {
+      infoHtml = this.options.onInfo({
+        image: this.images[this.currentIndex],
+        index: this.currentIndex,
+        metadata: metadata,
+        scale: this.scale,
+        rotation: this.rotation,
+      });
+
+      if (infoHtml) {
+        this.imageInfoPanel.innerHTML = infoHtml;
+        return;
+      }
+    }
+    // 没有自定义函数，使用默认显示
     if (this.options.imageInfo.showName) {
       infoHtml += `<p><span class="info-label">${i18n.info.name}</span> ${metadata.name}</p>`;
     }
@@ -1316,16 +1505,16 @@ class ImagesViewer {
       infoHtml += `<p><span class="info-label">${i18n.info.dimensions}</span> ${metadata.width} × ${metadata.height}</p>`;
     }
     infoHtml += `
-        <div class="images-viewer-shortcuts-title">${i18n.info.shortcuts}</div>
-        <p><span class="info-label">${i18n.info.zoomIn}</span> ↑ +</p>
-        <p><span class="info-label">${i18n.info.zoomOut}</span> ↓ -</p>
-        <p><span class="info-label">${i18n.info.prev}</span> ←</p>
-        <p><span class="info-label">${i18n.info.next}</span> →</p>
-        <p><span class="info-label">${i18n.info.reset}</span> 0</p>
-        <p><span class="info-label">${i18n.info.fullscreen}</span> F</p>
-        <p><span class="info-label">${i18n.info.info}</span> I</p>
-        <p><span class="info-label">${i18n.info.close}</span> ESC</p>
-      `;
+          <div class="images-viewer-shortcuts-title">${i18n.info.shortcuts}</div>
+          <p><span class="info-label">${i18n.info.zoomIn}</span> ↑ +</p>
+          <p><span class="info-label">${i18n.info.zoomOut}</span> ↓ -</p>
+          <p><span class="info-label">${i18n.info.prev}</span> ←</p>
+          <p><span class="info-label">${i18n.info.next}</span> →</p>
+          <p><span class="info-label">${i18n.info.reset}</span> 0</p>
+          <p><span class="info-label">${i18n.info.fullscreen}</span> F</p>
+          <p><span class="info-label">${i18n.info.info}</span> I</p>
+          <p><span class="info-label">${i18n.info.close}</span> ESC</p>
+        `;
 
     this.imageInfoPanel.innerHTML = infoHtml;
   }
@@ -1391,7 +1580,7 @@ class ImagesViewer {
       this.currentIndex = newIndex;
       this.loadCurrentImage();
     }
-    if (this.options.change) this.options.change(this.currentIndex, 'prev');
+    if (this.options.onChange) this.options.onChange(this.currentIndex, 'prev');
   }
 
   next() {
@@ -1406,7 +1595,7 @@ class ImagesViewer {
       this.currentIndex = newIndex;
       this.loadCurrentImage();
     }
-    if (this.options.change) this.options.change(this.currentIndex, 'next');
+    if (this.options.onChange) this.options.onChange(this.currentIndex, 'next');
   }
 
   bindEvents() {
@@ -1486,6 +1675,18 @@ class ImagesViewer {
       this.translateY = this.startTranslateY + rotatedDelta.y;
 
       this.updateImageTransform();
+
+      // 触发拖动事件
+      if (this.options.onDrag) {
+        const currentImage = this.images[this.currentIndex];
+        this.options.onDrag({
+          image: currentImage,
+          index: this.currentIndex,
+          translateX: this.translateX,
+          translateY: this.translateY,
+        });
+      }
+
       e.preventDefault();
     });
 
@@ -1641,6 +1842,17 @@ class ImagesViewer {
           this.translateX = this.touchState.startTranslateX + rotatedDelta.x;
           this.translateY = this.touchState.startTranslateY + rotatedDelta.y;
           this.updateImageTransform();
+
+          // 触发拖动事件
+          if (this.options.drag) {
+            const currentImage = this.images[this.currentIndex];
+            this.options.drag({
+              image: currentImage,
+              index: this.currentIndex,
+              translateX: this.translateX,
+              translateY: this.translateY,
+            });
+          }
         }
       } else if (e.touches.length === 2 && this.touchState.isPinching) {
         const touch1 = e.touches[0];
@@ -1676,6 +1888,17 @@ class ImagesViewer {
           this.scale = clampedScale;
           this.updateImageTransform();
           this.updateZoomIndicator();
+
+          // 触发缩放事件
+          if (this.options.onZoom) {
+            const currentImage = this.images[this.currentIndex];
+            this.options.onZoom({
+              image: currentImage,
+              index: this.currentIndex,
+              scale: this.scale,
+              oldScale: this.touchState.initialScale,
+            });
+          }
         }
       }
 
@@ -1748,6 +1971,17 @@ class ImagesViewer {
     this.scale = newScale;
     this.updateImageTransform();
     this.updateZoomIndicator();
+
+    // 触发缩放事件
+    if (this.options.zoom) {
+      const currentImage = this.images[this.currentIndex];
+      this.options.zoom({
+        image: currentImage,
+        index: this.currentIndex,
+        scale: this.scale,
+        oldScale: oldScale,
+      });
+    }
   }
 
   zoom(delta) {
@@ -1786,6 +2020,17 @@ class ImagesViewer {
 
     this.updateImageTransform();
     this.updateZoomIndicator();
+
+    // 触发旋转事件
+    if (this.options.onRotate) {
+      const currentImage = this.images[this.currentIndex];
+      this.options.onRotate({
+        image: currentImage,
+        index: this.currentIndex,
+        rotation: this.rotation,
+        oldRotation: oldRotation,
+      });
+    }
   }
 
   calculateBoundingBox(width, height, rotation) {
@@ -1817,7 +2062,7 @@ class ImagesViewer {
   }
 
   downloadImage() {
-    const currentUrl = this.images[this.currentIndex];
+    const currentUrl = this.getImageUrl(this.currentIndex);
     const metadata = this.imageMetadata[this.currentIndex];
     if (this.loadedImages.has(currentUrl)) {
       const cachedImg = this.loadedImages.get(currentUrl);
@@ -1841,7 +2086,7 @@ class ImagesViewer {
     } catch (error) {
       console.error('Image download failed:', error);
       // 下载失败，尝试使用原始 URL 下载
-      const currentUrl = this.images[this.currentIndex];
+      const currentUrl = this.getImageUrl(this.currentIndex);
       this.downloadedImage(currentUrl, metadata);
     }
   }
@@ -1992,11 +2237,11 @@ class ImagesViewer {
     }
   }
 
-  show() {
+  onShow() {
     this.container.style.display = 'block';
     setTimeout(() => {
       this.container.style.opacity = '1';
-      if (this.options.show) this.options.show(this.container);
+      if (this.options.onShow) this.options.onShow(this.container);
     }, 10);
   }
 
@@ -2010,7 +2255,7 @@ class ImagesViewer {
       const styles = document.getElementById('images-viewer-styles');
       if (styles) styles.remove();
       if (this.container) this.container.remove();
-      if (this.options.close) this.options.close();
+      if (this.options.onClose) this.options.onClose();
     }, 300);
   }
 

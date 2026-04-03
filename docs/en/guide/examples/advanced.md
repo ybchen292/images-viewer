@@ -39,7 +39,7 @@ const viewer = new ImagesViewer({
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
-  show: function(container) {
+  onShow: function(container) {
     console.log('Viewer opened');
     // Add custom elements
     const header = document.createElement('div');
@@ -47,11 +47,11 @@ const viewer = new ImagesViewer({
     header.style.cssText = 'color: white; position: absolute; top: 20px; left: 50%; transform: translateX(-50%);';
     container.appendChild(header);
   },
-  close: function() {
+  onClose: function() {
     console.log('Viewer closed');
     // Clean up resources
   },
-  change: function(index, direction) {
+  onChange: function(index, direction) {
     console.log('Image changed:', index, direction);
     // Track analytics
   }
@@ -203,7 +203,7 @@ const viewer = new ImagesViewer({
       function openWithCallbacks() {
         new ImagesViewer({
           images: ['https://picsum.photos/800/1200?random=1', 'https://picsum.photos/800/1200?random=2', 'https://picsum.photos/800/1200?random=3'],
-          show: function(container) {
+          onShow: function(container) {
             console.log('Viewer opened');
             // Add custom loading indicator
             const loading = document.createElement('div');
@@ -216,11 +216,11 @@ const viewer = new ImagesViewer({
               loading.remove();
             }, 2000);
           },
-          close: function() {
+          onClose: function() {
             console.log('Viewer closed');
             alert('Viewer closed!');
           },
-          change: function(index, direction) {
+          onChange: function(index, direction) {
             console.log(`Changed to image ${index} (${direction})`);
             document.title = `Image ${index + 1} | ImagesViewer`;
           }
@@ -290,13 +290,13 @@ const viewer = new ImagesViewer({
             thumbItemHeight: '50px',
             thumbGap: '10px'
           },
-          show: function(container) {
+          onShow: function(container) {
             console.log('Viewer opened');
           },
-          close: function() {
+          onClose: function() {
             console.log('Viewer closed');
           },
-          change: function(index, direction) {
+          onChange: function(index, direction) {
             console.log('Image changed:', index, direction);
           }
         });
@@ -313,17 +313,17 @@ const viewer = new ImagesViewer({
 ```javascript
 const viewer = new ImagesViewer({
   images: productImages,
-  show: function() {
+  onShow: function() {
     // Track viewer open event
     analytics.track('viewer_open', {
       imageCount: productImages.length
     });
   },
-  close: function() {
+  onClose: function() {
     // Track viewer close event
     analytics.track('viewer_close');
   },
-  change: function(index, direction) {
+  onChange: function(index, direction) {
     // Track image view event
     analytics.track('image_view', {
       imageIndex: index,
@@ -367,7 +367,7 @@ const viewer = new ImagesViewer({
     prev: true,
     next: true
   },
-  change: function(index) {
+  onChange: function(index) {
     console.log(`Showing ${index === 0 ? 'before' : 'after'} image`);
   }
 });
@@ -379,7 +379,7 @@ const viewer = new ImagesViewer({
 // Slideshow functionality
 const viewer = new ImagesViewer({
   images: slideshowImages,
-  show: function() {
+  onShow: function() {
     let currentIndex = 0;
     const interval = setInterval(() => {
       currentIndex = (currentIndex + 1) % slideshowImages.length;
@@ -389,7 +389,7 @@ const viewer = new ImagesViewer({
     // Store interval reference for cleanup
     viewer.slideshowInterval = interval;
   },
-  close: function() {
+  onClose: function() {
     // Clear interval on close
     if (viewer.slideshowInterval) {
       clearInterval(viewer.slideshowInterval);

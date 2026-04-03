@@ -130,13 +130,13 @@ viewer.close();
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg'],
-  show: function(container) {
+  onShow: function(container) {
     console.log('查看器显示:', container);
   },
-  close: function() {
+  onClose: function() {
     console.log('查看器关闭');
   },
-  change: function(currentIndex, direction) {
+  onChange: function(currentIndex, direction) {
     console.log('图片改变:', currentIndex, direction);
   }
 });

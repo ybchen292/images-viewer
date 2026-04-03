@@ -17,7 +17,7 @@
     </h2>
     <button id="openViewer">单图预览</button>
     <button id="openViewer2">自定义按钮和触发事件</button>
-
+    <button id="openViewer3">自定义缩略图</button>
     <script type="module">
       import ImagesViewer from './index.js';
       document.getElementById('openViewer').addEventListener('click', function () {
@@ -25,10 +25,16 @@
       });
       document.getElementById('openViewer2').addEventListener('click', function () {
         const viewer = new ImagesViewer({
+          initialIndex: 0,
           images: [
-            'https://picsum.photos/id/20/200/300',
-            'https://picsum.photos/id/237/800/600',
-            'https://picsum.photos/id/21/200/300',
+            {
+              url: 'https://picsum.photos/id/237/800/600',
+              title: '图片237',
+            },
+            {
+              url: 'https://picsum.photos/id/21/200/300',
+              title: '图片21',
+            },
             'https://picsum.photos/id/22/200/300',
             'https://picsum.photos/id/23/200/300',
             'https://picsum.photos/id/24/200/300',
@@ -47,6 +53,9 @@
           ],
           minScale: 0.3,
           maxScale: 3,
+          theme: {
+            thumbMaxWidth: '90%',
+          },
           customButtons: [
             [
               '🔍',
@@ -56,10 +65,10 @@
               },
             ],
           ],
-          change: (index, direction) => {
+          onChange: (index, direction) => {
             console.log(index, direction);
           },
-          show: dom => {
+          onShow: dom => {
             // 自定义按钮
             const toolbar = dom.querySelector('.images-viewer-toolbar');
             const button = document.createElement('button');
@@ -74,11 +83,63 @@
               // e.stopPropagation();
             });
             toolbar.appendChild(button);
-            console.log('show', dom);
+            console.log('onShow', dom);
           },
-          close: () => {
+          onClose: () => {
             console.log('close');
           },
+        });
+      });
+
+      document.getElementById('openViewer3').addEventListener('click', function () {
+        const viewer = new ImagesViewer({
+          images: [
+            {
+              url: 'https://picsum.photos/id/20/800/600',
+              thumbnail: 'https://picsum.photos/id/20/100/100',
+              title: '图片1 - 美丽的风景',
+            },
+            {
+              url: 'https://picsum.photos/id/237/800/600',
+              thumbnail: 'https://picsum.photos/id/237/100/100',
+              title: '图片2 - 可爱的小狗',
+            },
+            {
+              url: 'https://picsum.photos/id/21/800/600',
+              thumbnail: 'https://picsum.photos/id/21/100/100',
+              title: '图片3 - 日落美景',
+            },
+            {
+              url: 'https://picsum.photos/id/22/800/600',
+              thumbnail: 'https://picsum.photos/id/22/100/100',
+              title: '图片4 - 自然风光',
+            },
+            {
+              url: 'https://picsum.photos/id/23/800/600',
+              thumbnail: 'https://picsum.photos/id/23/100/100',
+              title: '图片5 - 山川河流',
+            },
+            {
+              url: 'https://picsum.photos/id/24/800/600',
+              thumbnail: 'https://picsum.photos/id/24/100/100',
+              title: '图片6 - 24',
+            },
+            {
+              url: 'https://picsum.photos/id/25/800/600',
+              thumbnail: 'https://picsum.photos/id/25/100/100',
+              title: '图片7 - 25',
+            },
+            {
+              url: 'https://picsum.photos/id/26/800/600',
+              thumbnail: 'https://picsum.photos/id/26/100/100',
+              title: '图片8 - 26',
+            },
+            {
+              url: 'https://picsum.photos/id/27/800/600',
+              thumbnail: 'https://picsum.photos/id/27/100/100',
+              title: '图片9 - 27',
+            },
+          ],
         });
       });
     </script>

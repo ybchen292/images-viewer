@@ -21,6 +21,10 @@ A feature-rich, responsive image viewer supporting zoom, rotation, navigation, a
 - 🌍 **Internationalization** - Customizable interface language
 - 📦 **Cache Management** - Intelligent image caching, reducing duplicate requests
 - ⚡ **Performance Optimization** - Lazy loading and preloading strategies
+- 🏷️ **Image Object Support** - Support for object format image configuration with url, title, thumbnail properties
+- 🔢 **Initial Index** - Specify initial image index to display
+- 📞 **Event Listeners** - Support for rotation, drag, and zoom event listeners
+- 🎨 **Custom Display** - Customize info bar, page counter, and zoom indicator display
 
 ## Installation and Usage
 
@@ -37,6 +41,24 @@ const viewer2 = new ImagesViewer({
 
 // Array format
 const viewer3 = new ImagesViewer(['img1.jpg', 'img2.jpg']);
+
+// Image object format
+const viewer4 = new ImagesViewer({
+  images: [
+    {
+      url: 'https://example.com/image1.jpg',
+      title: 'Landscape Image',
+      thumbnail: 'https://example.com/thumb1.jpg',
+      category: 'nature'
+    },
+    {
+      url: 'https://example.com/image2.jpg',
+      title: 'Architecture Image',
+      thumbnail: 'https://example.com/thumb2.jpg',
+      category: 'architecture'
+    }
+  ]
+});
 ```
 
 ### npm
@@ -137,18 +159,57 @@ const viewer = new ImagesViewer({
     ['🔍', function() { console.log('Custom button clicked'); }]
   ],
 
+  // Initial image index
+  initialIndex: 0,
+
   // Event callbacks
-  show: function(container) {
+  onShow: function(container) {
     console.log('Viewer shown');
   },
 
-  close: function() {
+  onClose: function() {
     console.log('Viewer closed');
   },
 
-  change: function(currentIndex, direction) {
+  onChange: function(currentIndex, direction) {
     console.log('Image changed:', currentIndex, direction);
-  }
+  },
+
+  // Rotation event
+  onRotate: function(data) {
+    console.log('Image rotated:', data);
+  },
+
+  // Drag event
+  onDrag: function(data) {
+    console.log('Image dragged:', data);
+  },
+
+  // Zoom event
+  onZoom: function(data) {
+    console.log('Image zoomed:', data);
+  },
+
+  // Custom info bar function
+  onInfo: function(data) {
+    return `
+      <div class="custom-info">
+        <p>Image ${data.index + 1} / ${data.totalPages}</p>
+        <p>Zoom: ${(data.scale * 100).toFixed(0)}%</p>
+        <p>Rotation: ${data.rotation}°</p>
+      </div>
+    `;
+  },
+
+  // Custom page counter function
+  onCounter: function(data) {
+    return `Page ${data.currentPage} / ${data.totalPages}`;
+  },
+
+  // Custom zoom indicator function
+  onZoomIndicator: function(data) {
+    return `Zoom: ${data.percentage}%`;
+  },
 
   // Image information display
   imageInfo: {
@@ -393,11 +454,11 @@ const viewer = new ImagesViewer({
       },
     ],
   ],
-  change: (index, direction) => {
+  onChange: (index, direction) => {
     // direction: 'prev' | 'next'
     console.log(index, direction);
   },
-  show: dom => {
+  onShow: dom => {
     // Custom button
     const toolbar = dom.querySelector('.images-viewer-toolbar');
     const button = document.createElement('button');
@@ -412,9 +473,9 @@ const viewer = new ImagesViewer({
       // e.stopPropagation();
     });
     toolbar.appendChild(button);
-    console.log('show', dom);
+    console.log('onShow', dom);
   },
-  close: () => {
+  onClose: () => {
     console.log('close');
   },
 });

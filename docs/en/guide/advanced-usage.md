@@ -125,7 +125,7 @@ Full programmatic control over the viewer:
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
-  show: function(container) {
+  onShow: function(container) {
     // Access DOM elements
     const toolbar = container.querySelector('.images-viewer-toolbar');
     
@@ -250,7 +250,7 @@ const viewer = new ImagesViewer({
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg'],
-  show: function(container) {
+  onShow: function(container) {
     console.log('Viewer opened');
     // Add custom event listeners
     container.addEventListener('click', (e) => {
@@ -259,11 +259,11 @@ const viewer = new ImagesViewer({
       }
     });
   },
-  close: function() {
+  onClose: function() {
     console.log('Viewer closed');
     // Clean up resources
   },
-  change: function(index, direction) {
+  onChange: function(index, direction) {
     console.log(`Changed to image ${index} (${direction})`);
     // Track image views
   }

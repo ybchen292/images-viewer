@@ -39,7 +39,7 @@ const viewer = new ImagesViewer({
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
-  show: function(container) {
+  onShow: function(container) {
     console.log('查看器打开');
     // 添加自定义元素
     const header = document.createElement('div');
@@ -47,11 +47,11 @@ const viewer = new ImagesViewer({
     header.style.cssText = 'color: white; position: absolute; top: 20px; left: 50%; transform: translateX(-50%);';
     container.appendChild(header);
   },
-  close: function() {
+  onClose: function() {
     console.log('查看器关闭');
     // 清理资源
   },
-  change: function(index, direction) {
+  onChange: function(index, direction) {
     console.log('图片改变:', index, direction);
     // 跟踪分析
   }
@@ -203,7 +203,7 @@ const viewer = new ImagesViewer({
       function openWithCallbacks() {
         new ImagesViewer({
           images: ['https://picsum.photos/800/1200?random=1', 'https://picsum.photos/800/1200?random=2', 'https://picsum.photos/800/1200?random=3'],
-          show: function(container) {
+          onShow: function(container) {
             console.log('查看器打开');
             // 添加自定义加载指示器
             const loading = document.createElement('div');
@@ -216,11 +216,11 @@ const viewer = new ImagesViewer({
               loading.remove();
             }, 2000);
           },
-          close: function() {
+          onClose: function() {
             console.log('查看器关闭');
             alert('查看器已关闭！');
           },
-          change: function(index, direction) {
+          onChange: function(index, direction) {
             console.log(`切换到图片 ${index} (${direction})`);
             document.title = `图片 ${index + 1} | ImagesViewer`;
           }
@@ -290,13 +290,13 @@ const viewer = new ImagesViewer({
             thumbItemHeight: '50px',
             thumbGap: '10px'
           },
-          show: function(container) {
+          onShow: function(container) {
             console.log('查看器打开');
           },
-          close: function() {
+          onClose: function() {
             console.log('查看器关闭');
           },
-          change: function(index, direction) {
+          onChange: function(index, direction) {
             console.log('图片改变:', index, direction);
           }
         });
@@ -313,17 +313,17 @@ const viewer = new ImagesViewer({
 ```javascript
 const viewer = new ImagesViewer({
   images: productImages,
-  show: function() {
+  onShow: function() {
     // 跟踪查看器打开事件
     analytics.track('viewer_open', {
       imageCount: productImages.length
     });
   },
-  close: function() {
+  onClose: function() {
     // 跟踪查看器关闭事件
     analytics.track('viewer_close');
   },
-  change: function(index, direction) {
+  onChange: function(index, direction) {
     // 跟踪图片查看事件
     analytics.track('image_view', {
       imageIndex: index,
@@ -367,7 +367,7 @@ const viewer = new ImagesViewer({
     prev: true,
     next: true
   },
-  change: function(index) {
+  onChange: function(index) {
     console.log(`显示 ${index === 0 ? '之前' : '之后'} 图片`);
   }
 });
@@ -379,7 +379,7 @@ const viewer = new ImagesViewer({
 // 幻灯片功能
 const viewer = new ImagesViewer({
   images: slideshowImages,
-  show: function() {
+  onShow: function() {
     let currentIndex = 0;
     const interval = setInterval(() => {
       currentIndex = (currentIndex + 1) % slideshowImages.length;
@@ -389,7 +389,7 @@ const viewer = new ImagesViewer({
     // 存储定时器引用以便清理
     viewer.slideshowInterval = interval;
   },
-  close: function() {
+  onClose: function() {
     // 关闭时清除定时器
     if (viewer.slideshowInterval) {
       clearInterval(viewer.slideshowInterval);

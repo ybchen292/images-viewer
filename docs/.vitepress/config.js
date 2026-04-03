@@ -50,6 +50,7 @@ export default defineConfig({
             { text: '配置', link: '/guide/api/configuration' },
             { text: '方法', link: '/guide/api/methods' },
             { text: '事件', link: '/guide/api/events' },
+            { text: 'TypeScript 类型', link: '/guide/api/types' },
           ],
         },
         {
@@ -79,6 +80,7 @@ export default defineConfig({
             { text: 'Configuration', link: '/en/guide/api/configuration' },
             { text: 'Methods', link: '/en/guide/api/methods' },
             { text: 'Events', link: '/en/guide/api/events' },
+            { text: 'TypeScript Types', link: '/en/guide/api/types' },
           ],
         },
         {

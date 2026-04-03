@@ -4,27 +4,58 @@ title: Configuration
 
 # Configuration
 
-This page documents all configuration options available for ImagesViewer.
+Detailed configuration options for ImagesViewer.
 
 ## Basic Configuration
 
 ### `images`
 
-**Type:** `string | string[]`
+**Type:** `string | string[] | ImageObject[]`
 **Required:** Yes
 
-The image(s) to display. Can be a single image URL or an array of image URLs.
+Images to display, supporting single URL, URL array, or image object array.
 
 ```javascript
 // Single image
 const viewer = new ImagesViewer('image.jpg');
 
-// Multiple images
+// Multiple images (URL array)
 const viewer = new ImagesViewer(['image1.jpg', 'image2.jpg']);
 
-// With options
+// Multiple images (object array)
 const viewer = new ImagesViewer({
-  images: ['image1.jpg', 'image2.jpg']
+  images: [
+    {
+      url: 'https://example.com/image1.jpg',
+      title: 'Landscape',
+      thumbnail: 'https://example.com/thumb1.jpg'
+    },
+    {
+      url: 'https://example.com/image2.jpg',
+      title: 'Architecture',
+      thumbnail: 'https://example.com/thumb2.jpg'
+    }
+  ]
+});
+```
+
+**Image Object Properties:**
+- `url`: Image URL (required)
+- `title`: Image title (optional), used for info panel display
+- `thumbnail`: Thumbnail URL (optional), used for thumbnail navigation display
+- Other custom properties: Can add any custom properties, accessible in event callbacks
+
+### `initialIndex`
+
+**Type:** `number`
+**Default:** `0`
+
+Initial image index to display.
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
+  initialIndex: 1 // Start from the second image
 });
 ```
 
@@ -33,28 +64,14 @@ const viewer = new ImagesViewer({
 **Type:** `boolean`
 **Default:** `false`
 
-Whether to close the viewer when clicking on the background mask.
-
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg'],
-  closeOnMaskClick: true
-});
-```
+Whether to close the viewer when clicking the background mask.
 
 ### `loop`
 
 **Type:** `boolean`
 **Default:** `true`
 
-Whether to loop through images when reaching the first or last image.
-
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg', 'image2.jpg'],
-  loop: false
-});
-```
+Whether to loop through images.
 
 ### `preloadCount`
 
@@ -63,26 +80,12 @@ const viewer = new ImagesViewer({
 
 Number of adjacent images to preload.
 
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
-  preloadCount: 5
-});
-```
-
 ### `maxCacheSize`
 
 **Type:** `number`
 **Default:** `30`
 
 Maximum number of images to keep in cache.
-
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
-  maxCacheSize: 20
-});
-```
 
 ### `minScale`
 
@@ -91,13 +94,6 @@ const viewer = new ImagesViewer({
 
 Minimum zoom scale (10%).
 
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg'],
-  minScale: 0.5 // Minimum 50% zoom
-});
-```
-
 ### `maxScale`
 
 **Type:** `number`
@@ -105,39 +101,32 @@ const viewer = new ImagesViewer({
 
 Maximum zoom scale (500%).
 
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg'],
-  maxScale: 3 // Maximum 300% zoom
-});
-```
-
 ## Buttons Configuration
 
 ### `buttons`
 
 **Type:** `object`
 
-Configuration for toolbar buttons.
+Toolbar button configuration.
 
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg'],
   buttons: {
-    zoomIn: true,         // Show zoom in button
-    zoomOut: true,        // Show zoom out button
-    rotateLeft: true,     // Show rotate left button
-    rotateRight: true,    // Show rotate right button
-    reset: true,          // Show reset button
-    download: true,       // Show download button
-    fullscreen: true,     // Show fullscreen button
-    prev: true,           // Show previous button
-    next: true,           // Show next button
-    close: true,          // Show close button
-    topClose: true,       // Show top-right close button
-    thumbnails: true,     // Show thumbnail navigation
-    info: true,           // Show info panel button
-    originalSize: true    // Show original size button
+    zoomIn: true,         // Zoom in
+    zoomOut: true,        // Zoom out
+    rotateLeft: true,     // Rotate left
+    rotateRight: true,    // Rotate right
+    reset: true,          // Reset
+    download: true,       // Download
+    fullscreen: true,     // Fullscreen
+    prev: true,           // Previous
+    next: true,           // Next
+    close: true,          // Close
+    topClose: true,       // Top-right close
+    thumbnails: true,     // Thumbnails
+    info: true,           // Info panel
+    originalSize: true    // Original size
   }
 });
 ```
@@ -166,7 +155,7 @@ const viewer = new ImagesViewer({
 
 **Type:** `object`
 
-Configuration for image information display.
+Image information display configuration.
 
 ```javascript
 const viewer = new ImagesViewer({
@@ -185,7 +174,7 @@ const viewer = new ImagesViewer({
 
 **Type:** `object`
 
-Internationalization configuration.
+Interface language configuration.
 
 ```javascript
 const viewer = new ImagesViewer({
@@ -220,7 +209,7 @@ const viewer = new ImagesViewer({
 
 **Type:** `object`
 
-Theme customization options.
+Interface theme customization options.
 
 ```javascript
 const viewer = new ImagesViewer({
@@ -242,37 +231,6 @@ const viewer = new ImagesViewer({
     buttonFontSize: '20px',
     buttonBorderRadius: '50%',
     
-    // Navigation buttons
-    navButtonBgColor: 'rgba(50, 50, 50, 0.7)',
-    navButtonHoverBg: 'rgba(80, 80, 80, 0.7)',
-    navButtonSize: '55px',
-    navButtonFontSize: '20px',
-    navButtonBorderRadius: '50%',
-    
-    // Top close button
-    topCloseBtnSize: '50px',
-    topCloseBtnTop: '20px',
-    topCloseBtnRight: '20px',
-    topCloseBtnFontSize: '24px',
-    topCloseBtnBgColor: 'rgba(50, 50, 50, 0.7)',
-    topCloseBtnHoverBg: 'rgba(80, 80, 80, 0.7)',
-    
-    // Info panel
-    infoBgColor: 'rgba(30, 30, 30, 0.8)',
-    infoBorderRadius: '12px',
-    infoPadding: '10px 15px',
-    infoFontSize: '13px',
-    infoTop: '70px',
-    infoLeft: '20px',
-    
-    // Zoom indicator
-    zoomIndicatorBg: 'rgba(0, 0, 0, 0.7)',
-    zoomIndicatorBorderRadius: '18px',
-    zoomIndicatorPadding: '6px 12px',
-    zoomIndicatorFontSize: '14px',
-    zoomIndicatorTop: '20px',
-    zoomIndicatorLeft: '20px',
-    
     // Thumbnails
     thumbItemWidth: '80px',
     thumbItemHeight: '50px',
@@ -291,47 +249,100 @@ const viewer = new ImagesViewer({
 
 ## Event Callbacks
 
-### `show`
+### `onShow`
 
 **Type:** `(container: HTMLElement) => void`
 
-Callback when the viewer is shown.
+Triggered when the viewer is shown.
 
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg'],
-  show: function(container) {
+  onShow: function(container) {
     console.log('Viewer shown:', container);
   }
 });
 ```
 
-### `close`
+### `onClose`
 
 **Type:** `() => void`
 
-Callback when the viewer is closed.
+Triggered when the viewer is closed.
+
+### `onChange`
+
+**Type:** `(currentIndex: number, direction: 'prev' | 'next') => void`
+
+Triggered when the image is changed.
+
+### `onRotate`
+
+**Type:** `(data: RotateEventData) => void`
+
+Triggered when the image is rotated.
+
+### `onDrag`
+
+**Type:** `(data: DragEventData) => void`
+
+Triggered when the image is dragged.
+
+### `onZoom`
+
+**Type:** `(data: ZoomEventData) => void`
+
+Triggered when the image is zoomed.
+
+## Custom Functions
+
+### `onInfo`
+
+**Type:** `(data: InfoTextParams) => string | null | undefined`
+
+Custom info bar content.
 
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg'],
-  close: function() {
-    console.log('Viewer closed');
+  onInfo: function(data) {
+    return `
+      <div class="custom-info">
+        <p>Image ${data.index + 1} / ${data.totalPages}</p>
+        <p>Zoom: ${(data.scale * 100).toFixed(0)}%</p>
+        <p>Rotation: ${data.rotation}°</p>
+      </div>
+    `;
   }
 });
 ```
 
-### `change`
+### `onCounter`
 
-**Type:** `(currentIndex: number, direction: 'prev' | 'next') => void`
+**Type:** `(data: CounterParams) => string | null | undefined`
 
-Callback when the image is changed.
+Custom page counter display.
 
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg'],
-  change: function(currentIndex, direction) {
-    console.log('Image changed:', currentIndex, direction);
+  onCounter: function(data) {
+    return `Image ${data.currentPage} / ${data.totalPages}`;
+  }
+});
+```
+
+### `onZoomIndicator`
+
+**Type:** `(data: ZoomIndicatorParams) => string | null | undefined`
+
+Custom zoom indicator display.
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  onZoomIndicator: function(data) {
+    return `Zoom: ${data.percentage}%`;
   }
 });
 ```
@@ -342,6 +353,7 @@ const viewer = new ImagesViewer({
 const viewer = new ImagesViewer({
   // Basic settings
   images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
+  initialIndex: 0,
   closeOnMaskClick: true,
   loop: true,
   preloadCount: 3,
@@ -412,14 +424,42 @@ const viewer = new ImagesViewer({
   },
   
   // Event callbacks
-  show: function(container) {
+  onShow: function(container) {
     console.log('Viewer shown');
   },
-  close: function() {
+  onClose: function() {
     console.log('Viewer closed');
   },
-  change: function(index, direction) {
+  onChange: function(index, direction) {
     console.log('Image changed:', index, direction);
+  },
+  
+  // Event listeners
+  onRotate: function(data) {
+    console.log('Image rotated:', data);
+  },
+  onDrag: function(data) {
+    console.log('Image dragged:', data);
+  },
+  onZoom: function(data) {
+    console.log('Image zoomed:', data);
+  },
+  
+  // Custom functions
+  onInfo: function(data) {
+    return `
+      <div class="custom-info">
+        <p>Image ${data.index + 1} / ${data.totalPages}</p>
+        <p>Zoom: ${(data.scale * 100).toFixed(0)}%</p>
+        <p>Rotation: ${data.rotation}°</p>
+      </div>
+    `;
+  },
+  onCounter: function(data) {
+    return `Image ${data.currentPage} / ${data.totalPages}`;
+  },
+  onZoomIndicator: function(data) {
+    return `Zoom: ${data.percentage}%`;
   }
 });
 ```

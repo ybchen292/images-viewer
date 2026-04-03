@@ -4,27 +4,58 @@ title: 配置
 
 # 配置
 
-本页面记录了 ImagesViewer 所有可用的配置选项。
+ImagesViewer 的详细配置选项。
 
 ## 基本配置
 
 ### `images`
 
-**类型：** `string | string[]`
+**类型：** `string | string[] | ImageObject[]`
 **必填：** 是
 
-要显示的图片。可以是单个图片 URL 或图片 URL 数组。
+要显示的图片，支持单张 URL、URL 数组或图片对象数组。
 
 ```javascript
 // 单张图片
 const viewer = new ImagesViewer('image.jpg');
 
-// 多张图片
+// 多张图片（URL 数组）
 const viewer = new ImagesViewer(['image1.jpg', 'image2.jpg']);
 
-// 带选项
+// 多张图片（对象数组）
 const viewer = new ImagesViewer({
-  images: ['image1.jpg', 'image2.jpg']
+  images: [
+    {
+      url: 'https://example.com/image1.jpg',
+      title: '风景图片',
+      thumbnail: 'https://example.com/thumb1.jpg'
+    },
+    {
+      url: 'https://example.com/image2.jpg',
+      title: '建筑图片',
+      thumbnail: 'https://example.com/thumb2.jpg'
+    }
+  ]
+});
+```
+
+**图片对象属性说明：**
+- `url`：图片 URL（必填）
+- `title`：图片标题（可选），用于信息面板显示
+- `thumbnail`：缩略图 URL（可选），用于缩略图导航显示
+- 其他自定义属性：可添加任意自定义属性，在事件回调中访问
+
+### `initialIndex`
+
+**类型：** `number`
+**默认值：** `0`
+
+初始显示的图片索引。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
+  initialIndex: 1 // 从第二张图片开始显示
 });
 ```
 
@@ -35,40 +66,19 @@ const viewer = new ImagesViewer({
 
 点击背景遮罩时是否关闭查看器。
 
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg'],
-  closeOnMaskClick: true
-});
-```
-
 ### `loop`
 
 **类型：** `boolean`
 **默认值：** `true`
 
-到达第一张或最后一张图片时是否循环浏览。
-
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg', 'image2.jpg'],
-  loop: false
-});
-```
+是否循环浏览图片。
 
 ### `preloadCount`
 
 **类型：** `number`
 **默认值：** `3`
 
-要预加载的相邻图片数量。
-
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
-  preloadCount: 5
-});
-```
+预加载的相邻图片数量。
 
 ### `maxCacheSize`
 
@@ -77,13 +87,6 @@ const viewer = new ImagesViewer({
 
 缓存中保留的最大图片数量。
 
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
-  maxCacheSize: 20
-});
-```
-
 ### `minScale`
 
 **类型：** `number`
@@ -91,26 +94,12 @@ const viewer = new ImagesViewer({
 
 最小缩放比例（10%）。
 
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg'],
-  minScale: 0.5 // 最小 50% 缩放
-});
-```
-
 ### `maxScale`
 
 **类型：** `number`
 **默认值：** `5`
 
 最大缩放比例（500%）。
-
-```javascript
-const viewer = new ImagesViewer({
-  images: ['image1.jpg'],
-  maxScale: 3 // 最大 300% 缩放
-});
-```
 
 ## 按钮配置
 
@@ -124,20 +113,20 @@ const viewer = new ImagesViewer({
 const viewer = new ImagesViewer({
   images: ['image1.jpg'],
   buttons: {
-    zoomIn: true,         // 显示放大按钮
-    zoomOut: true,        // 显示缩小按钮
-    rotateLeft: true,     // 显示向左旋转按钮
-    rotateRight: true,    // 显示向右旋转按钮
-    reset: true,          // 显示重置按钮
-    download: true,       // 显示下载按钮
-    fullscreen: true,     // 显示全屏按钮
-    prev: true,           // 显示上一张按钮
-    next: true,           // 显示下一张按钮
-    close: true,          // 显示关闭按钮
-    topClose: true,       // 显示右上角关闭按钮
-    thumbnails: true,     // 显示缩略图导航
-    info: true,           // 显示信息面板按钮
-    originalSize: true    // 显示原始尺寸按钮
+    zoomIn: true,         // 放大
+    zoomOut: true,        // 缩小
+    rotateLeft: true,     // 左旋转
+    rotateRight: true,    // 右旋转
+    reset: true,          // 重置
+    download: true,       // 下载
+    fullscreen: true,     // 全屏
+    prev: true,           // 上一张
+    next: true,           // 下一张
+    close: true,          // 关闭
+    topClose: true,       // 右上角关闭
+    thumbnails: true,     // 缩略图
+    info: true,           // 信息面板
+    originalSize: true    // 原始尺寸
   }
 });
 ```
@@ -148,7 +137,7 @@ const viewer = new ImagesViewer({
 
 **类型：** `Array<[string, () => void]>`
 
-要添加到工具栏的自定义按钮数组。
+添加到工具栏的自定义按钮数组。
 
 ```javascript
 const viewer = new ImagesViewer({
@@ -185,7 +174,7 @@ const viewer = new ImagesViewer({
 
 **类型：** `object`
 
-国际化配置。
+界面语言配置。
 
 ```javascript
 const viewer = new ImagesViewer({
@@ -208,7 +197,7 @@ const viewer = new ImagesViewer({
       prev: '上一张 (←)',
       next: '下一张 (→)',
       close: '关闭 (Esc)',
-      loading: '加载中...',
+      loading: '加载中...'
     }
   }
 });
@@ -220,7 +209,7 @@ const viewer = new ImagesViewer({
 
 **类型：** `object`
 
-主题自定义选项。
+界面主题自定义选项。
 
 ```javascript
 const viewer = new ImagesViewer({
@@ -242,37 +231,6 @@ const viewer = new ImagesViewer({
     buttonFontSize: '20px',
     buttonBorderRadius: '50%',
     
-    // 导航按钮
-    navButtonBgColor: 'rgba(50, 50, 50, 0.7)',
-    navButtonHoverBg: 'rgba(80, 80, 80, 0.7)',
-    navButtonSize: '55px',
-    navButtonFontSize: '20px',
-    navButtonBorderRadius: '50%',
-    
-    // 顶部关闭按钮
-    topCloseBtnSize: '50px',
-    topCloseBtnTop: '20px',
-    topCloseBtnRight: '20px',
-    topCloseBtnFontSize: '24px',
-    topCloseBtnBgColor: 'rgba(50, 50, 50, 0.7)',
-    topCloseBtnHoverBg: 'rgba(80, 80, 80, 0.7)',
-    
-    // 信息面板
-    infoBgColor: 'rgba(30, 30, 30, 0.8)',
-    infoBorderRadius: '12px',
-    infoPadding: '10px 15px',
-    infoFontSize: '13px',
-    infoTop: '70px',
-    infoLeft: '20px',
-    
-    // 缩放指示器
-    zoomIndicatorBg: 'rgba(0, 0, 0, 0.7)',
-    zoomIndicatorBorderRadius: '18px',
-    zoomIndicatorPadding: '6px 12px',
-    zoomIndicatorFontSize: '14px',
-    zoomIndicatorTop: '20px',
-    zoomIndicatorLeft: '20px',
-    
     // 缩略图
     thumbItemWidth: '80px',
     thumbItemHeight: '50px',
@@ -291,47 +249,100 @@ const viewer = new ImagesViewer({
 
 ## 事件回调
 
-### `show`
+### `onShow`
 
 **类型：** `(container: HTMLElement) => void`
 
-查看器显示时的回调。
+查看器显示时触发。
 
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg'],
-  show: function(container) {
+  onShow: function(container) {
     console.log('查看器显示:', container);
   }
 });
 ```
 
-### `close`
+### `onClose`
 
 **类型：** `() => void`
 
-查看器关闭时的回调。
+查看器关闭时触发。
+
+### `onChange`
+
+**类型：** `(currentIndex: number, direction: 'prev' | 'next') => void`
+
+图片切换时触发。
+
+### `onRotate`
+
+**类型：** `(data: RotateEventData) => void`
+
+图片旋转时触发。
+
+### `onDrag`
+
+**类型：** `(data: DragEventData) => void`
+
+图片拖动时触发。
+
+### `onZoom`
+
+**类型：** `(data: ZoomEventData) => void`
+
+图片缩放时触发。
+
+## 自定义函数
+
+### `onInfo`
+
+**类型：** `(data: InfoTextParams) => string | null | undefined`
+
+自定义信息栏内容。
 
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg'],
-  close: function() {
-    console.log('查看器关闭');
+  onInfo: function(data) {
+    return `
+      <div class="custom-info">
+        <p>图片 ${data.index + 1} / ${data.totalPages}</p>
+        <p>缩放: ${(data.scale * 100).toFixed(0)}%</p>
+        <p>旋转: ${data.rotation}°</p>
+      </div>
+    `;
   }
 });
 ```
 
-### `change`
+### `onCounter`
 
-**类型：** `(currentIndex: number, direction: 'prev' | 'next') => void`
+**类型：** `(data: CounterParams) => string | null | undefined`
 
-图片改变时的回调。
+自定义页数显示。
 
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg'],
-  change: function(currentIndex, direction) {
-    console.log('图片改变:', currentIndex, direction);
+  onCounter: function(data) {
+    return `第 ${data.currentPage} 张 / 共 ${data.totalPages} 张`;
+  }
+});
+```
+
+### `onZoomIndicator`
+
+**类型：** `(data: ZoomIndicatorParams) => string | null | undefined`
+
+自定义缩放指数显示。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  onZoomIndicator: function(data) {
+    return `缩放: ${data.percentage}%`;
   }
 });
 ```
@@ -342,6 +353,7 @@ const viewer = new ImagesViewer({
 const viewer = new ImagesViewer({
   // 基本设置
   images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
+  initialIndex: 0,
   closeOnMaskClick: true,
   loop: true,
   preloadCount: 3,
@@ -399,7 +411,7 @@ const viewer = new ImagesViewer({
       prev: '上一张 (←)',
       next: '下一张 (→)',
       close: '关闭 (Esc)',
-      loading: '加载中...',
+      loading: '加载中...'
     }
   },
   
@@ -412,14 +424,42 @@ const viewer = new ImagesViewer({
   },
   
   // 事件回调
-  show: function(container) {
+  onShow: function(container) {
     console.log('查看器显示');
   },
-  close: function() {
+  onClose: function() {
     console.log('查看器关闭');
   },
-  change: function(index, direction) {
+  onChange: function(index, direction) {
     console.log('图片改变:', index, direction);
+  },
+  
+  // 事件监听
+  onRotate: function(data) {
+    console.log('图片旋转:', data);
+  },
+  onDrag: function(data) {
+    console.log('图片拖动:', data);
+  },
+  onZoom: function(data) {
+    console.log('图片缩放:', data);
+  },
+  
+  // 自定义函数
+  onInfo: function(data) {
+    return `
+      <div class="custom-info">
+        <p>图片 ${data.index + 1} / ${data.totalPages}</p>
+        <p>缩放: ${(data.scale * 100).toFixed(0)}%</p>
+        <p>旋转: ${data.rotation}°</p>
+      </div>
+    `;
+  },
+  onCounter: function(data) {
+    return `第 ${data.currentPage} 张 / 共 ${data.totalPages} 张`;
+  },
+  onZoomIndicator: function(data) {
+    return `缩放: ${data.percentage}%`;
   }
 });
 ```
