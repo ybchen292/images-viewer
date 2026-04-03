@@ -97,7 +97,9 @@
             {
               url: 'https://picsum.photos/id/20/800/600',
               thumbnail: 'https://picsum.photos/id/20/100/100',
-              title: '图片1 - 美丽的风景',
+              title: (currentImage, index) => {
+                return `图片${index + 1}`;
+              },
             },
             {
               url: 'https://picsum.photos/id/237/800/600',

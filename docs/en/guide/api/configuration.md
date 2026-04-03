@@ -28,6 +28,9 @@ const viewer = new ImagesViewer({
     {
       url: 'https://example.com/image1.jpg',
       title: 'Landscape',
+      // title: (currentImage, index) => {
+      //           return `图片${index + 1}`;
+      // },
       thumbnail: 'https://example.com/thumb1.jpg'
     },
     {
@@ -40,9 +43,9 @@ const viewer = new ImagesViewer({
 ```
 
 **Image Object Properties:**
-- `url`: Image URL (required)
-- `title`: Image title (optional), used for info panel display
-- `thumbnail`: Thumbnail URL (optional), used for thumbnail navigation display
+- `url`: Image URL (required) . Supporting function format (currentImage, index) => string
+- `title`: Image title (optional), Supporting function format (currentImage, index) => string
+- `thumbnail`: Thumbnail URL (optional), Supporting function format (currentImage, index) => string
 - Other custom properties: Can add any custom properties, accessible in event callbacks
 
 ### `initialIndex`

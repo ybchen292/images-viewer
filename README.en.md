@@ -48,18 +48,20 @@ const viewer4 = new ImagesViewer({
     {
       url: 'https://example.com/image1.jpg',
       title: 'Landscape Image',
+      // title: (currentImage, index) => {
+      //          return `图片${index + 1}`;
+      // },
       thumbnail: 'https://example.com/thumb1.jpg',
-      category: 'nature'
     },
     {
       url: 'https://example.com/image2.jpg',
       title: 'Architecture Image',
       thumbnail: 'https://example.com/thumb2.jpg',
-      category: 'architecture'
     }
   ]
 });
 ```
+### images in `url`, `title`, `thumbnail` Support function format: (currentImage, index) => string
 
 ### npm
 

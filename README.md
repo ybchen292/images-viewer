@@ -48,18 +48,21 @@ const viewer4 = new ImagesViewer({
     {
       url: 'https://example.com/image1.jpg',
       title: '风景图片',
+      // title: (currentImage, index) => {
+      //          return `图片${index + 1}`;
+      // },
       thumbnail: 'https://example.com/thumb1.jpg',
-      category: 'nature'
     },
     {
       url: 'https://example.com/image2.jpg',
       title: '建筑图片',
       thumbnail: 'https://example.com/thumb2.jpg',
-      category: 'architecture'
     }
   ]
 });
+
 ```
+### images中`url` `title` `thumbnail` 支持函数格式((currentImage,Index) => string)
 
 ### npm
 

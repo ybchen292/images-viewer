@@ -28,6 +28,9 @@ const viewer = new ImagesViewer({
     {
       url: 'https://example.com/image1.jpg',
       title: '风景图片',
+      // title: (currentImage, index) => {
+      //           return `图片${index + 1}`;
+      // },
       thumbnail: 'https://example.com/thumb1.jpg'
     },
     {
@@ -40,9 +43,9 @@ const viewer = new ImagesViewer({
 ```
 
 **图片对象属性说明：**
-- `url`：图片 URL（必填）
-- `title`：图片标题（可选），用于信息面板显示
-- `thumbnail`：缩略图 URL（可选），用于缩略图导航显示
+- `url`：图片 URL（必填）. 支持函数格式((currentImage,Index) => string) 
+- `title`：图片标题（可选），支持函数格式((currentImage,Index) => string) 
+- `thumbnail`：缩略图 URL（可选），支持函数格式((currentImage,Index) => string)
 - 其他自定义属性：可添加任意自定义属性，在事件回调中访问
 
 ### `initialIndex`
