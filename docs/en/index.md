@@ -6,9 +6,6 @@ hero:
   name: "ImagesViewer"
   text: "A feature-rich image viewer"
   tagline: Responsive, customizable, and framework-agnostic
-  image:
-    src: /images-viewer-logo.svg
-    alt: ImagesViewer
   actions:
     - theme: brand
       text: Get Started

@@ -61,7 +61,7 @@ const viewer4 = new ImagesViewer({
   ]
 });
 ```
-### images in `url`, `title`, `thumbnail` Support function format: (currentImage, index) => string
+### images in `url`, `title`, `thumbnail` Support function format: `(currentImage, index) => string`
 
 ### npm
 

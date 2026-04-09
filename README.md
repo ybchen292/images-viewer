@@ -62,7 +62,7 @@ const viewer4 = new ImagesViewer({
 });
 
 ```
-### images中`url` `title` `thumbnail` 支持函数格式((currentImage,Index) => string)
+### images中`url` `title` `thumbnail` 支持函数格式`(currentImage,Index) => string`
 
 ### npm
 

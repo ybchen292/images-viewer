@@ -17,6 +17,33 @@ export default defineConfig({
       lang: 'en-US',
       title: 'ImagesViewer',
       description: 'A feature-rich, responsive image viewer supporting zoom, rotation, navigation, and more.',
+      themeConfig: {
+        nav: [
+          {
+            text: 'Home',
+            link: '/en/',
+          },
+          {
+            text: 'Guide',
+            link: '/en/guide/',
+          },
+          {
+            text: 'Other',
+            items: [
+              {
+                text: 'VersionCheck',
+                link: 'https://ybchen292.github.io/version-check/',
+                target: '_blank',
+                rel: 'noopener noreferrer',
+              },
+            ],
+          },
+        ],
+        footer: {
+          message: 'Based on MIT License',
+          copyright: 'Copyright © 2026 ImagesViewer',
+        },
+      },
     },
   },
   themeConfig: {
@@ -30,8 +57,18 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '指南', link: '/guide/' },
+      {
+        text: '其他',
+        items: [
+          {
+            text: 'VersionCheck',
+            link: 'https://ybchen292.github.io/version-check/',
+            target: '_blank',
+            rel: 'noopener noreferrer',
+          },
+        ],
+      },
     ],
-
     sidebar: {
       '/guide/': [
         {
