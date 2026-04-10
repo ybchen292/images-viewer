@@ -7,6 +7,14 @@ export default defineConfig({
   lang: 'zh-CN',
   base: '/images-viewer/',
   lastUpdated: true,
+  head: [
+    // 元标签
+    [
+      'meta',
+      { name: 'keywords', content: 'ImagesViewer, 图片查看器, 图片预览, 图片缩放, 图片旋转, 响应式, JavaScript' },
+    ],
+    ['meta', { name: 'author', content: 'ImagesViewer Team' }],
+  ],
   locales: {
     root: {
       label: '中文',
@@ -17,6 +25,16 @@ export default defineConfig({
       lang: 'en-US',
       title: 'ImagesViewer',
       description: 'A feature-rich, responsive image viewer supporting zoom, rotation, navigation, and more.',
+      head: [
+        [
+          'meta',
+          {
+            name: 'keywords',
+            content: 'ImagesViewer, image viewer, image preview, image zoom, image rotation, responsive, JavaScript',
+          },
+        ],
+        ['meta', { name: 'author', content: 'ImagesViewer Team' }],
+      ],
       themeConfig: {
         nav: [
           {
