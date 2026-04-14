@@ -60,8 +60,42 @@ const viewer4 = new ImagesViewer({
     }
   ]
 });
+
+// Custom property mapping
+const viewer5 = new ImagesViewer({
+  images: [
+    {
+      url2: 'https://example.com/image1.jpg',
+      title2: 'Landscape Image',
+      thumbnail2: 'https://example.com/thumb1.jpg'
+    },
+    {
+      url2: 'https://example.com/image2.jpg',
+      title2: 'Architecture Image',
+      thumbnail2: 'https://example.com/thumb2.jpg'
+    }
+  ],
+  props: {
+    url: 'url2',
+    title: 'title2',
+    thumbnail: 'thumbnail2'
+  }
+});
+
+// Function form property mapping
+const viewer6 = new ImagesViewer({
+  images: [
+    { id: 1, path: 'photos/1.jpg', alt: 'Landscape' },
+    { id: 2, path: 'photos/2.jpg', alt: 'Portrait' }
+  ],
+  props: {
+    url: (item, index) => `https://example.com/${item.path}`,
+    title: (item, index) => `${item.alt} (ID: ${item.id})`,
+    thumbnail: (item, index) => `https://example.com/thumbnails/${item.id}.jpg`
+  }
+});
+
 ```
-### images in `url`, `title`, `thumbnail` Support function format: `(currentImage, index) => string`
 
 ### npm
 
@@ -163,6 +197,13 @@ const viewer = new ImagesViewer({
 
   // Initial image index
   initialIndex: 0,
+
+  // Custom property mapping
+  props: {
+    url: 'url', // Property name or getter function for image URL
+    title: 'title', // Property name or getter function for image title
+    thumbnail: 'thumbnail' // Property name or getter function for thumbnail URL
+  },
 
   // Event callbacks
   onShow: function(container) {

@@ -7,14 +7,7 @@
     <style></style>
   </head>
   <body>
-    <h2>
-      预览的图片地址
-      <!-- <div><a href="https://picsum.photos/id/237/800/600">https://picsum.photos/id/237/800/600</a></div>
-      <div>
-        <a href="https://picsum.photos/id/1005/1600/900">https://picsum.photos/id/1005/1600/900</a>
-      </div>
-      <div><a href="https://picsum.photos/id/10/1200/800">https://picsum.photos/id/10/1200/800</a></div> -->
-    </h2>
+    <h2>预览的图片地址</h2>
     <button id="openViewer">单图预览</button>
     <button id="openViewer2">自定义按钮和触发事件</button>
     <button id="openViewer3">自定义缩略图</button>
@@ -95,16 +88,14 @@
         const viewer = new ImagesViewer({
           images: [
             {
-              url: 'https://picsum.photos/id/20/800/600',
-              thumbnail: 'https://picsum.photos/id/20/100/100',
-              title: (currentImage, index) => {
-                return `图片${index + 1}`;
-              },
+              url2: 'https://picsum.photos/id/20/800/600',
+              thumbnail2: 'https://picsum.photos/id/20/100/100',
+              title2: '图片1 - 可爱的小狗',
             },
             {
-              url: 'https://picsum.photos/id/237/800/600',
-              thumbnail: 'https://picsum.photos/id/237/100/100',
-              title: '图片2 - 可爱的小狗',
+              url2: 'https://picsum.photos/id/237/800/600',
+              thumbnail2: 'https://picsum.photos/id/237/100/100',
+              title2: '图片2 - 可爱的小狗',
             },
             {
               url: 'https://picsum.photos/id/21/800/600',
@@ -142,6 +133,14 @@
               title: '图片9 - 27',
             },
           ],
+          props: {
+            url: 'url2',
+            title: (currentImage, index) => {
+              console.log(currentImage, index);
+              return currentImage.title2 || `图片${index + 1}`;
+            },
+            thumbnail: 'thumbnail2',
+          },
         });
       });
     </script>

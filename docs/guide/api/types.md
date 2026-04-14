@@ -258,6 +258,13 @@ interface ImagesViewerOptions {
     showDimensions?: boolean;
   };
 
+  // 图片信息显示配置
+  props?: {
+    url?: string;
+    title?: string;
+    thumbnail?: string;
+  };
+
   // 国际化配置
   i18n?: {
     info?: {

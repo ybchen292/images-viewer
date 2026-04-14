@@ -9,6 +9,12 @@ class ImagesViewer {
       maxCacheSize: 30,
       minScale: 0.1,
       maxScale: 5,
+      // 自定义属性映射
+      props: {
+        url: 'url',
+        title: 'title',
+        thumbnail: 'thumbnail',
+      },
       buttons: {
         zoomIn: true,
         zoomOut: true,
@@ -123,6 +129,7 @@ class ImagesViewer {
       ...options,
       buttons: { ...this.defaultOptions.buttons, ...(options?.buttons || {}) },
       imageInfo: { ...this.defaultOptions.imageInfo, ...(options?.imageInfo || {}) },
+      props: { ...this.defaultOptions.props, ...(options?.props || {}) },
       i18n: {
         ...this.defaultOptions.i18n,
         ...(options?.i18n || {}),
@@ -721,7 +728,6 @@ class ImagesViewer {
     // 图片元素
     this.image = document.createElement('img');
     this.image.className = 'images-viewer-image';
-    this.image.alt = 'Preview image';
     this.image.crossOrigin = 'anonymous';
     this.imageContainer.appendChild(this.image);
 
@@ -1122,28 +1128,13 @@ class ImagesViewer {
 
   parseImageOptions(options) {
     this.images = [];
-    this.thumbnails = [];
-
     if (typeof options === 'string') {
       this.images = [options];
     } else if (Array.isArray(options)) {
-      this.images = options.filter(url => typeof url === 'string' && url.trim() !== '');
+      this.images = options.filter(item => item !== '');
     } else if (typeof options === 'object') {
       if (options.images && Array.isArray(options.images)) {
-        this.images = options.images
-          .map(item => {
-            if (typeof item === 'string') {
-              return item;
-            } else if (typeof item === 'object' && item.url) {
-              // 处理缩略图参数
-              if (item.thumbnail) {
-                this.thumbnails.push(item.thumbnail);
-              }
-              return item;
-            }
-            return null;
-          })
-          .filter(Boolean);
+        this.images = options.images.filter(item => item !== '');
       }
     }
   }
@@ -1153,22 +1144,25 @@ class ImagesViewer {
     if (typeof item === 'string') {
       return item;
     } else if (typeof item === 'object') {
-      if (typeof item.url === 'function') {
-        return item.url(item, index);
-      } else if (item.url) {
-        return item.url;
+      const prop = this.options.props.url;
+      if (typeof prop === 'function') {
+        return prop(item, index);
+      } else if (typeof prop === 'string' && item[prop]) {
+        return item[prop];
       }
     }
     return '';
   }
 
   getThumbnailUrl(index) {
-    if (this.thumbnails[index]) {
-      const thumbnail = this.thumbnails[index];
-      if (typeof thumbnail === 'function') {
-        return thumbnail(this.images[index], index);
+    const item = this.images[index];
+    if (typeof item === 'object') {
+      const prop = this.options.props.thumbnail;
+      if (typeof prop === 'function') {
+        return prop(item, index);
+      } else if (typeof prop === 'string' && item[prop]) {
+        return item[prop];
       }
-      return thumbnail;
     }
     return this.getImageUrl(index);
   }
@@ -1176,10 +1170,11 @@ class ImagesViewer {
   getImageTitle(index) {
     const item = this.images[index];
     if (typeof item === 'object') {
-      if (typeof item.title === 'function') {
-        return item.title(item, index);
-      } else if (item.title) {
-        return item.title;
+      const prop = this.options.props.title;
+      if (typeof prop === 'function') {
+        return prop(item, index);
+      } else if (typeof prop === 'string' && item[prop]) {
+        return item[prop];
       }
     }
     return '';
@@ -1369,10 +1364,9 @@ class ImagesViewer {
 
     this.showLoading();
     this.image.classList.remove('loaded');
-
+    this.image.src = '';
     // 如果图片已加载，直接显示
     if (isLoaded) {
-      this.image.src = '';
       const cachedImg = this.loadedImages.get(currentUrl);
       // 使用 Canvas 绘制已加载的图片，完全避免网络请求
       const canvas = document.createElement('canvas');
@@ -1385,6 +1379,12 @@ class ImagesViewer {
       canvas.toBlob(blob => {
         if (blob) {
           const blobUrl = URL.createObjectURL(blob);
+
+          // 先设置 src，等图片加载完成后再显示
+          this.image.onload = () => {
+            this.image.onload = null;
+          };
+
           this.image.src = blobUrl;
 
           // 清理之前的 Blob URL

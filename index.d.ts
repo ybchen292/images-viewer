@@ -276,6 +276,18 @@ interface ImagesViewerOptions {
   };
 
   /**
+   * 图片信息显示配置
+   */
+  props?: {
+    /** 图片 URL 的属性名或获取函数 */
+    url?: string;
+    /** 图片标题的属性名或获取函数 */
+    title?: string;
+    /** 缩略图 URL 的属性名或获取函数 */
+    thumbnail?: string;
+  };
+
+  /**
    * 国际化配置
    */
   i18n?: {

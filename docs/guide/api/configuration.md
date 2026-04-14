@@ -28,9 +28,6 @@ const viewer = new ImagesViewer({
     {
       url: 'https://example.com/image1.jpg',
       title: '风景图片',
-      // title: (currentImage, index) => {
-      //           return `图片${index + 1}`;
-      // },
       thumbnail: 'https://example.com/thumb1.jpg'
     },
     {
@@ -43,10 +40,60 @@ const viewer = new ImagesViewer({
 ```
 
 **图片对象属性说明：**
-- `url`：图片 URL（必填）. 支持函数格式((currentImage,Index) => string) 
-- `title`：图片标题（可选），支持函数格式((currentImage,Index) => string) 
-- `thumbnail`：缩略图 URL（可选），支持函数格式((currentImage,Index) => string)
+- `url`：图片 URL（必填）
+- `title`：图片标题（可选）
+- `thumbnail`：缩略图 URL（可选）
 - 其他自定义属性：可添加任意自定义属性，在事件回调中访问
+
+### `props`
+
+**类型：** `object`
+**默认值：** `{ url: 'url', title: 'title', thumbnail: 'thumbnail' }`
+
+自定义图片对象属性映射，支持字符串和函数形式。
+
+**属性说明：**
+- `url`：图片 URL 的属性名或获取函数
+- `title`：图片标题的属性名或获取函数
+- `thumbnail`：缩略图 URL 的属性名或获取函数
+
+**使用示例：**
+
+```javascript
+// 自定义属性映射（字符串形式）
+const viewer = new ImagesViewer({
+  images: [
+    {
+      url2: 'https://example.com/image1.jpg',
+      title2: '风景图片',
+      thumbnail2: 'https://example.com/thumb1.jpg'
+    },
+    {
+      url2: 'https://example.com/image2.jpg',
+      title2: '建筑图片',
+      thumbnail2: 'https://example.com/thumb2.jpg'
+    }
+  ],
+  props: {
+    url: 'url2',
+    title: 'title2',
+    thumbnail: 'thumbnail2'
+  }
+});
+
+// 自定义属性映射（函数形式）
+const viewer = new ImagesViewer({
+  images: [
+    { id: 1, path: 'photos/1.jpg', alt: '风景' },
+    { id: 2, path: 'photos/2.jpg', alt: '人物' }
+  ],
+  props: {
+    url: (item, index) => `https://example.com/${item.path}`,
+    title: (item, index) => `${item.alt} (ID: ${item.id})`,
+    thumbnail: (item, index) => `https://example.com/thumbnails/${item.id}.jpg`
+  }
+});
+```
 
 ### `initialIndex`
 

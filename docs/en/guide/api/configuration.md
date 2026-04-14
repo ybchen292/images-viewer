@@ -28,9 +28,6 @@ const viewer = new ImagesViewer({
     {
       url: 'https://example.com/image1.jpg',
       title: 'Landscape',
-      // title: (currentImage, index) => {
-      //           return `图片${index + 1}`;
-      // },
       thumbnail: 'https://example.com/thumb1.jpg'
     },
     {
@@ -43,10 +40,60 @@ const viewer = new ImagesViewer({
 ```
 
 **Image Object Properties:**
-- `url`: Image URL (required) . Supporting function format (currentImage, index) => string
-- `title`: Image title (optional), Supporting function format (currentImage, index) => string
-- `thumbnail`: Thumbnail URL (optional), Supporting function format (currentImage, index) => string
+- `url`: Image URL (required) 
+- `title`: Image title (optional)
+- `thumbnail`: Thumbnail URL (optional)
 - Other custom properties: Can add any custom properties, accessible in event callbacks
+
+### `props`
+
+**Type:** `object`
+**Default:** `{ url: 'url', title: 'title', thumbnail: 'thumbnail' }`
+
+Custom image object property mapping, supporting string and function forms.
+
+**Properties:**
+- `url`: Property name or getter function for image URL
+- `title`: Property name or getter function for image title
+- `thumbnail`: Property name or getter function for thumbnail URL
+
+**Usage Examples:**
+
+```javascript
+// Custom property mapping (string form)
+const viewer = new ImagesViewer({
+  images: [
+    {
+      url2: 'https://example.com/image1.jpg',
+      title2: 'Landscape',
+      thumbnail2: 'https://example.com/thumb1.jpg'
+    },
+    {
+      url2: 'https://example.com/image2.jpg',
+      title2: 'Architecture',
+      thumbnail2: 'https://example.com/thumb2.jpg'
+    }
+  ],
+  props: {
+    url: 'url2',
+    title: 'title2',
+    thumbnail: 'thumbnail2'
+  }
+});
+
+// Custom property mapping (function form)
+const viewer = new ImagesViewer({
+  images: [
+    { id: 1, path: 'photos/1.jpg', alt: 'Landscape' },
+    { id: 2, path: 'photos/2.jpg', alt: 'Portrait' }
+  ],
+  props: {
+    url: (item, index) => `https://example.com/${item.path}`,
+    title: (item, index) => `${item.alt} (ID: ${item.id})`,
+    thumbnail: (item, index) => `https://example.com/thumbnails/${item.id}.jpg`
+  }
+});
+```
 
 ### `initialIndex`
 

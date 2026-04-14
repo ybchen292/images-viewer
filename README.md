@@ -61,8 +61,41 @@ const viewer4 = new ImagesViewer({
   ]
 });
 
+// 自定义属性映射
+const viewer5 = new ImagesViewer({
+  images: [
+    {
+      url2: 'https://example.com/image1.jpg',
+      title2: '风景图片',
+      thumbnail2: 'https://example.com/thumb1.jpg'
+    },
+    {
+      url2: 'https://example.com/image2.jpg',
+      title2: '建筑图片',
+      thumbnail2: 'https://example.com/thumb2.jpg'
+    }
+  ],
+  props: {
+    url: 'url2',
+    title: 'title2',
+    thumbnail: 'thumbnail2'
+  }
+});
+
+// 函数形式的属性映射
+const viewer6 = new ImagesViewer({
+  images: [
+    { id: 1, path: 'photos/1.jpg', alt: '风景' },
+    { id: 2, path: 'photos/2.jpg', alt: '人物' }
+  ],
+  props: {
+    url: (item, index) => `https://example.com/${item.path}`,
+    title: (item, index) => `${item.alt} (ID: ${item.id})`,
+    thumbnail: (item, index) => `https://example.com/thumbnails/${item.id}.jpg`
+  }
+});
+
 ```
-### images中`url` `title` `thumbnail` 支持函数格式`(currentImage,Index) => string`
 
 ### npm
 
@@ -164,6 +197,13 @@ const viewer = new ImagesViewer({
 
   // 初始图片索引
   initialIndex: 0,
+
+  // 自定义属性映射
+  props: {
+    url: 'url', // 图片 URL 的属性名或获取函数
+    title: 'title', // 图片标题的属性名或获取函数
+    thumbnail: 'thumbnail' // 缩略图 URL 的属性名或获取函数
+  },
 
   // 事件回调
   onShow: function(container) {
