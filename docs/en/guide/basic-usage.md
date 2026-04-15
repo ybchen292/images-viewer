@@ -136,8 +136,8 @@ const viewer = new ImagesViewer({
   onClose: function() {
     console.log('Viewer closed');
   },
-  onChange: function(currentIndex, direction) {
-    console.log('Image changed:', currentIndex, direction);
+  onChange: function(data) { 
+    console.log('Image changed:', data);
   }
 });
 ```

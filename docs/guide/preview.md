@@ -42,8 +42,8 @@
           },
         ],
       ],
-      onChange: (index, direction) => {
-        console.log(index, direction);
+      onChange: (data) => {
+        console.log(data);
       },
       onShow: dom => {
         // 自定义按钮

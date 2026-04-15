@@ -10,7 +10,7 @@ ImagesViewer provides complete TypeScript type definitions.
 
 ### ImageObject
 
-Image object type with extensible properties.
+Image object type with support for extended properties.
 
 ```typescript
 interface ImageObject {
@@ -49,14 +49,14 @@ const viewer = new ImagesViewer({
 
 ### RotateEventData
 
-Rotation event parameters.
+Rotate event parameters.
 
 ```typescript
 interface RotateEventData {
-  image: string | ImageObject;  // Current image data
+  data: string | ImageObject;  // Current image data
   index: number;              // Current image index
   rotation: number;           // Current rotation angle
-  oldRotation: number;        // Old rotation angle
+  oldRotation: number;        // Previous rotation angle
 }
 ```
 
@@ -68,8 +68,8 @@ const viewer = new ImagesViewer({
   onRotate: (data: RotateEventData) => {
     console.log('Rotation angle:', data.rotation);
     console.log('Image index:', data.index);
-    if (typeof data.image === 'object') {
-      console.log('Image title:', data.image.title);
+    if (typeof data.data === 'object') {
+      console.log('Image title:', data.data.title);
     }
   }
 });
@@ -81,7 +81,7 @@ Drag event parameters.
 
 ```typescript
 interface DragEventData {
-  image: string | ImageObject;  // Current image data
+  data: string | ImageObject;  // Current image data
   index: number;              // Current image index
   translateX: number;         // Current X-axis offset
   translateY: number;         // Current Y-axis offset
@@ -105,10 +105,10 @@ Zoom event parameters.
 
 ```typescript
 interface ZoomEventData {
-  image: string | ImageObject;  // Current image data
+  data: string | ImageObject;  // Current image data
   index: number;              // Current image index
   scale: number;              // Current zoom scale
-  oldScale: number;          // Old zoom scale
+  oldScale: number;           // Previous zoom scale
 }
 ```
 
@@ -124,6 +124,67 @@ const viewer = new ImagesViewer({
 });
 ```
 
+### ChangeEventData
+
+Change event parameters.
+
+```typescript
+interface ChangeEventData {
+  index: number;              // Current image index
+  oldIndex: number;          // Previous image index
+  direction: 'next' | 'prev'; // Change direction
+  data: string | ImageObject; // Current image data
+  img: HTMLImageElement;      // Current image DOM element
+  dom: HTMLDivElement;        // Viewer container DOM element
+}
+```
+
+**Usage Example:**
+
+```typescript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg'],
+  onChange: (data: ChangeEventData) => {
+    console.log('Switched to image:', data.index);
+    console.log('From image:', data.oldIndex);
+    console.log('Direction:', data.direction);
+  }
+});
+```
+
+### ErrorCallbackParams
+
+Error callback parameters.
+
+```typescript
+interface ErrorCallbackParams {
+  data: string | ImageObject; // Current image data
+  index: number;               // Current image index
+  url: string;                  // Failed image URL
+  img: HTMLImageElement | null; // Corresponding image or thumbnail DOM element
+}
+```
+
+**Usage Example:**
+
+```typescript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg'],
+  onImageError: (data: ErrorCallbackParams) => {
+    console.log('Image load failed:', data.url);
+    // Return string to update alt attribute
+    return `Image load failed: ${data.url}`;
+  },
+  onThumbnailError: (data: ErrorCallbackParams) => {
+    console.log('Thumbnail load failed:', data.url);
+    // Custom DOM operation
+    if (data.img) {
+      data.img.alt = 'Thumbnail load failed';
+    }
+  }
+});
+```
+
 ## Custom Function Types
 
 ### InfoTextParams
@@ -132,7 +193,7 @@ Info bar custom function parameters.
 
 ```typescript
 interface InfoTextParams {
-  image: string | ImageObject;  // Current image data
+  data: string | ImageObject;  // Current image data
   index: number;              // Current image index
   metadata: {
     name: string;              // File name
@@ -164,14 +225,14 @@ const viewer = new ImagesViewer({
 
 ### CounterParams
 
-Page counter custom function parameters.
+Counter custom function parameters.
 
 ```typescript
 interface CounterParams {
-  image: string | ImageObject;  // Current image data
+  data: string | ImageObject;  // Current image data
   index: number;              // Current image index
-  currentPage: number;        // Current page number (1-indexed)
-  totalPages: number;         // Total pages
+  currentPage: number;        // Current page number (starting from 1)
+  totalPages: number;         // Total page count
   scale: number;              // Current zoom scale
   rotation: number;           // Current rotation angle
 }
@@ -194,10 +255,11 @@ Zoom indicator custom function parameters.
 
 ```typescript
 interface ZoomIndicatorParams {
-  image: string | ImageObject;  // Current image data
+  data: string | ImageObject;  // Current image data
   index: number;              // Current image index
   scale: number;              // Current zoom scale
-  percentage: number;         // Zoom percentage
+  percentage: number;          // Zoom percentage
+  rotation: number;           // Current rotation angle
 }
 ```
 
@@ -220,7 +282,7 @@ Viewer configuration options.
 
 ```typescript
 interface ImagesViewerOptions {
-  // Basic configuration
+  // Basic Configuration
   images?: string | string[] | ImageObject[];
   initialIndex?: number;
   closeOnMaskClick?: boolean;
@@ -230,7 +292,10 @@ interface ImagesViewerOptions {
   minScale?: number;
   maxScale?: number;
 
-  // Button configuration
+  // Retry after failure
+  retryOnError?: boolean;
+
+  // Button Configuration
   buttons?: {
     zoomIn?: boolean;
     zoomOut?: boolean;
@@ -248,17 +313,41 @@ interface ImagesViewerOptions {
     originalSize?: boolean;
   };
 
-  // Custom buttons
+  // Custom Buttons
   customButtons?: Array<[string, () => void]>;
 
-  // Image info configuration
+  // Image Info Configuration
   imageInfo?: {
     visible?: boolean;
     showName?: boolean;
     showDimensions?: boolean;
   };
 
-  // Internationalization configuration
+  // Props Mapping Configuration
+  props?: {
+    url?: string | ((item: any, index: number) => string);
+    title?: string | ((item: any, index: number) => string);
+    thumbnail?: string | ((item: any, index: number) => string);
+  };
+
+  // Error Callbacks
+  onImageError?: (data: ErrorCallbackParams) => void;
+  onThumbnailError?: (data: ErrorCallbackParams) => void;
+
+  // Event Callbacks
+  onShow?: (container: HTMLDivElement) => void;
+  onClose?: () => void;
+  onChange?: (data: ChangeEventData) => void;
+  onRotate?: (data: RotateEventData) => void;
+  onDrag?: (data: DragEventData) => void;
+  onZoom?: (data: ZoomEventData) => void;
+
+  // Custom Functions
+  onInfo?: (data: InfoTextParams) => string | null | undefined;
+  onCounter?: (data: CounterParams) => string | null | undefined;
+  onZoomIndicator?: (data: ZoomIndicatorParams) => string | null | undefined;
+
+  // Internationalization Configuration
   i18n?: {
     info?: {
       name?: string;
@@ -281,7 +370,7 @@ interface ImagesViewerOptions {
     };
   };
 
-  // Theme configuration
+  // Theme Configuration
   theme?: {
     viewerBgColor?: string;
     toolbarBgColor?: string;
@@ -326,19 +415,6 @@ interface ImagesViewerOptions {
     shadowColor?: string;
     transitionSpeed?: string;
   };
-
-  // Event callbacks
-  onShow?: (container: HTMLElement) => void;
-  onClose?: () => void;
-  onChange?: (currentIndex: number, direction: 'prev' | 'next') => void;
-  onRotate?: (data: RotateEventData) => void;
-  onDrag?: (data: DragEventData) => void;
-  onZoom?: (data: ZoomEventData) => void;
-
-  // Custom functions
-  onInfo?: (data: InfoTextParams) => string | null | undefined;
-  onCounter?: (data: CounterParams) => string | null | undefined;
-  onZoomIndicator?: (data: ZoomIndicatorParams) => string | null | undefined;
 }
 ```
 
@@ -373,7 +449,8 @@ const options: ImagesViewerOptions = {
   maxCacheSize: 30,
   minScale: 0.1,
   maxScale: 5,
-  
+  retryOnError: false,
+
   buttons: {
     zoomIn: true,
     zoomOut: true,
@@ -390,32 +467,46 @@ const options: ImagesViewerOptions = {
     info: true,
     originalSize: true
   },
-  
-  onShow: (container: HTMLElement) => {
+
+  props: {
+    url: 'url',
+    title: 'title',
+    thumbnail: 'thumbnail'
+  },
+
+  onShow: (container: HTMLDivElement) => {
     console.log('Viewer shown');
   },
-  
+
   onClose: () => {
     console.log('Viewer closed');
   },
-  
-  onChange: (index: number, direction: 'prev' | 'next') => {
-    console.log('Image changed:', index, direction);
+
+  onChange: (data) => {
+    console.log('Image changed:', data.index, data.direction);
   },
-  
-  onRotate: (data: RotateEventData) => {
+
+  onRotate: (data) => {
     console.log('Image rotated:', data.rotation);
   },
-  
-  onDrag: (data: DragEventData) => {
+
+  onDrag: (data) => {
     console.log('Image dragged:', data.translateX, data.translateY);
   },
-  
-  onZoom: (data: ZoomEventData) => {
+
+  onZoom: (data) => {
     console.log('Image zoomed:', data.scale);
   },
-  
-  onInfo: (data: InfoTextParams): string => {
+
+  onImageError: (data) => {
+    console.log('Image load failed:', data.url);
+  },
+
+  onThumbnailError: (data) => {
+    console.log('Thumbnail load failed:', data.url);
+  },
+
+  onInfo: (data): string => {
     const title = typeof data.image === 'object' ? data.image.title : data.metadata.name;
     return `
       <div class="custom-info">
@@ -425,12 +516,12 @@ const options: ImagesViewerOptions = {
       </div>
     `;
   },
-  
-  onCounter: (data: CounterParams): string => {
+
+  onCounter: (data): string => {
     return `${data.currentPage} / ${data.totalPages}`;
   },
-  
-  onZoomIndicator: (data: ZoomIndicatorParams): string => {
+
+  onZoomIndicator: (data): string => {
     return `Zoom: ${data.percentage}%`;
   }
 };
@@ -457,7 +548,7 @@ const viewer4 = new ImagesViewer({
 });
 
 const viewer5 = new ImagesViewer({
-  onRotate: (data: RotateEventData) => {
+  onRotate: (data) => {
     console.log(data.invalidProperty);  // Error: invalidProperty does not exist
   }
 });

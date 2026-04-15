@@ -27,7 +27,7 @@ export interface RotateEventData {
   /**
    * 当前图片数据
    */
-  image: string | ImageObject;
+  data: string | ImageObject;
   /**
    * 当前图片索引
    */
@@ -49,7 +49,7 @@ export interface DragEventData {
   /**
    * 当前图片数据
    */
-  image: string | ImageObject;
+  data: string | ImageObject;
   /**
    * 当前图片索引
    */
@@ -71,7 +71,7 @@ export interface ZoomEventData {
   /**
    * 当前图片数据
    */
-  image: string | ImageObject;
+  data: string | ImageObject;
   /**
    * 当前图片索引
    */
@@ -87,13 +87,43 @@ export interface ZoomEventData {
 }
 
 /**
+ * 切换事件参数
+ */
+export interface ChangeEventData {
+  /**
+   * 当前图片索引
+   */
+  index: number;
+  /**
+   * 旧的图片索引
+   */
+  oldIndex: number;
+  /**
+   * 切换方向
+   */
+  direction: 'next' | 'prev';
+  /**
+   * 当前图片数据
+   */
+  data: string | ImageObject;
+  /**
+   * 当前图片 DOM 元素
+   */
+  img: HTMLImageElement;
+  /**
+   * 查看器容器 DOM 元素
+   */
+  dom: HTMLDivElement;
+}
+
+/**
  * 信息栏自定义函数参数
  */
 export interface InfoTextParams {
   /**
    * 当前图片数据
    */
-  image: string | ImageObject;
+  data: string | ImageObject;
   /**
    * 当前图片索引
    */
@@ -123,7 +153,7 @@ export interface CounterParams {
   /**
    * 当前图片数据
    */
-  image: string | ImageObject;
+  data: string | ImageObject;
   /**
    * 当前图片索引
    */
@@ -153,7 +183,7 @@ export interface ZoomIndicatorParams {
   /**
    * 当前图片数据
    */
-  image: string | ImageObject;
+  data: string | ImageObject;
   /**
    * 当前图片索引
    */
@@ -170,6 +200,28 @@ export interface ZoomIndicatorParams {
    * 当前旋转角度
    */
   rotation: number;
+}
+
+/**
+ * 错误回调参数
+ */
+export interface ErrorCallbackParams {
+  /**
+   * 当前图片数据
+   */
+  data: string | ImageObject;
+  /**
+   * 当前图片索引
+   */
+  index: number;
+  /**
+   * 加载失败的图片 URL
+   */
+  url: string;
+  /**
+   * 对应的图片或缩略图 DOM 元素
+   */
+  img: HTMLImageElement | null;
 }
 
 /**
@@ -280,12 +332,73 @@ interface ImagesViewerOptions {
    */
   props?: {
     /** 图片 URL 的属性名或获取函数 */
-    url?: string;
+    url?: string | ((item: any, index: number) => string);
     /** 图片标题的属性名或获取函数 */
-    title?: string;
+    title?: string | ((item: any, index: number) => string);
     /** 缩略图 URL 的属性名或获取函数 */
-    thumbnail?: string;
+    thumbnail?: string | ((item: any, index: number) => string);
   };
+
+  /**
+   * 是否在失败后重新请求
+   * @default false
+   */
+  retryOnError?: boolean;
+
+  /**
+   * 图片加载失败回调
+   */
+  onImageError?: (data: ErrorCallbackParams) => void;
+
+  /**
+   * 缩略图加载失败回调
+   */
+  onThumbnailError?: (data: ErrorCallbackParams) => void;
+
+  /**
+   * 查看器显示时的回调
+   */
+  onShow?: (container: HTMLDivElement) => void;
+
+  /**
+   * 查看器关闭时的回调
+   */
+  onClose?: () => void;
+
+  /**
+   * 图片切换时的回调
+   */
+  onChange?: (data: ChangeEventData) => void;
+
+  /**
+   * 图片拖动时的回调
+   */
+  onDrag?: (data: DragEventData) => void;
+
+  /**
+   * 图片缩放时的回调
+   */
+  onZoom?: (data: ZoomEventData) => void;
+
+  /**
+   * 图片旋转时的回调
+   */
+  onRotate?: (data: RotateEventData) => void;
+
+  /**
+   * 自定义信息栏文本
+   */
+  onInfo?: (data: InfoTextParams) => string | null | undefined;
+
+  /**
+   * 自定义页数显示
+   */
+  onCounter?: (data: CounterParams) => string | null | undefined;
+
+  /**
+   * 自定义缩放指示器
+   */
+  onZoomIndicator?: (data: ZoomIndicatorParams) => string | null | undefined;
 
   /**
    * 国际化配置
@@ -331,30 +444,30 @@ interface ImagesViewerOptions {
    * 主题配置
    */
   theme?: {
-    // 背景相关
+    /** 背景相关 */
     viewerBgColor?: string;
 
-    // 工具栏相关
+    /** 工具栏相关 */
     toolbarBgColor?: string;
     toolbarBorderRadius?: string;
     toolbarPadding?: string;
     toolbarBottom?: string;
 
-    // 按钮相关
+    /** 按钮相关 */
     buttonBgColor?: string;
     buttonHoverBg?: string;
     buttonSize?: string;
     buttonFontSize?: string;
     buttonBorderRadius?: string;
 
-    // 导航按钮相关
+    /** 导航按钮相关 */
     navButtonBgColor?: string;
     navButtonHoverBg?: string;
     navButtonSize?: string;
     navButtonFontSize?: string;
     navButtonBorderRadius?: string;
 
-    // 右上角关闭按钮
+    /** 右上角关闭按钮 */
     topCloseBtnSize?: string;
     topCloseBtnTop?: string;
     topCloseBtnRight?: string;
@@ -362,7 +475,7 @@ interface ImagesViewerOptions {
     topCloseBtnBgColor?: string;
     topCloseBtnHoverBg?: string;
 
-    // 信息栏相关
+    /** 信息栏相关 */
     infoBgColor?: string;
     infoBorderRadius?: string;
     infoPadding?: string;
@@ -370,7 +483,7 @@ interface ImagesViewerOptions {
     infoTop?: string;
     infoLeft?: string;
 
-    // 缩放指示器
+    /** 缩放指示器 */
     zoomIndicatorBg?: string;
     zoomIndicatorBorderRadius?: string;
     zoomIndicatorPadding?: string;
@@ -378,66 +491,19 @@ interface ImagesViewerOptions {
     zoomIndicatorTop?: string;
     zoomIndicatorLeft?: string;
 
-    // 通用
+    /** 通用 */
     activeColor?: string;
     textColor?: string;
     shadowColor?: string;
     transitionSpeed?: string;
 
-    // 缩略图
+    /** 缩略图 */
     thumbItemWidth?: string;
     thumbItemHeight?: string;
     thumbGap?: string;
     thumbPadding?: string;
     thumbMaxWidth?: string;
   };
-
-  /**
-   * 回调函数 - 查看器显示时触发
-   */
-  onShow?: (container: HTMLElement) => void;
-
-  /**
-   * 回调函数 - 查看器关闭时触发
-   */
-  onClose?: () => void;
-
-  /**
-   * 回调函数 - 图片切换时触发
-   * @param currentIndex 当前图片索引
-   * @param direction 切换方向 'prev' | 'next'
-   */
-  onChange?: (currentIndex: number, direction: 'prev' | 'next') => void;
-
-  /**
-   * 旋转事件回调
-   */
-  onRotate?: (data: RotateEventData) => void;
-
-  /**
-   * 拖动事件回调
-   */
-  onDrag?: (data: DragEventData) => void;
-
-  /**
-   * 缩放事件回调
-   */
-  onZoom?: (data: ZoomEventData) => void;
-
-  /**
-   * 信息栏自定义函数
-   */
-  onInfo?: (data: InfoTextParams) => string | null | undefined;
-
-  /**
-   * 页数显示自定义函数
-   */
-  onCounter?: (data: CounterParams) => string | null | undefined;
-
-  /**
-   * 缩放指数自定义函数
-   */
-  onZoomIndicator?: (data: ZoomIndicatorParams) => string | null | undefined;
 }
 
 /**

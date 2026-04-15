@@ -42,10 +42,10 @@
           },
         ],
       ],
-      onChange: (index, direction) => {
-        console.log(index, direction);
+      onChange: (data) => {
+        console.log(data);
       },
-      onShow: dom => {
+      onShow: dom => {  
         // 自定义按钮
         const toolbar = dom.querySelector('.images-viewer-toolbar');
         const button = document.createElement('button');

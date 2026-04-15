@@ -9,6 +9,8 @@ class ImagesViewer {
       maxCacheSize: 30,
       minScale: 0.1,
       maxScale: 5,
+      // 是否在失败后重新请求
+      retryOnError: false,
       // 自定义属性映射
       props: {
         url: 'url',
@@ -142,7 +144,7 @@ class ImagesViewer {
     // 解析图片参数
     this.parseImageOptions(options);
     if (this.images.length === 0) {
-      throw new Error('未提供有效的图片URL');
+      throw new Error('No images URL');
     }
 
     // 初始化状态变量
@@ -162,8 +164,10 @@ class ImagesViewer {
     this.imageMetadata = [];
     this.loadedImages = new Map();
     this.loadingImages = new Map();
+    this.failedImages = new Set(); // 失败图片缓存
     this.loadedThumbnails = new Map();
     this.loadingThumbnails = new Map();
+    this.failedThumbnails = new Set(); // 失败缩略图缓存
 
     // 双击相关状态
     this.lastTapTime = 0;
@@ -327,8 +331,6 @@ class ImagesViewer {
           position: relative;
           object-fit: contain;
           cursor: grab;
-          transition: transform 0.1s ease-out, opacity var(--transition-speed) ease;
-          transform-origin: center center;
           opacity: 0;
           box-shadow: 0 8px 25px var(--shadow-color);
           border-radius: 4px;
@@ -338,6 +340,8 @@ class ImagesViewer {
 
         .images-viewer-image.loaded {
           opacity: 1;
+          transition: transform 0.1s ease-out, opacity var(--transition-speed) ease;
+          transform-origin: center center;
         }
 
         .images-viewer-image.dragging {
@@ -729,6 +733,7 @@ class ImagesViewer {
     this.image = document.createElement('img');
     this.image.className = 'images-viewer-image';
     this.image.crossOrigin = 'anonymous';
+    this.image.alt = ' ';
     this.imageContainer.appendChild(this.image);
 
     // 加载指示器
@@ -940,8 +945,31 @@ class ImagesViewer {
     const thumbContainer = document.createElement('div');
     thumbContainer.className = 'images-viewer-thumbnails-container';
 
+    // 委托事件处理缩略图点击
     this.addEvent(thumbContainer, 'click', e => {
       e.stopPropagation();
+      // 找到被点击的缩略图项
+      const thumbItem = e.target.closest('.images-viewer-thumbnail-item');
+      if (thumbItem) {
+        const clickedIndex = parseInt(thumbItem.dataset.index);
+        if (!isNaN(clickedIndex) && clickedIndex !== this.currentIndex) {
+          const oldIndex = this.currentIndex;
+          this.currentIndex = clickedIndex;
+          this.loadCurrentImage();
+          this.updateThumbnails();
+          // 触发 onchange 事件
+          if (this.options.onChange) {
+            this.options.onChange({
+              index: this.currentIndex,
+              oldIndex: oldIndex,
+              direction: this.currentIndex > oldIndex ? 'next' : 'prev',
+              data: this.images[this.currentIndex],
+              img: this.image,
+              dom: this.container,
+            });
+          }
+        }
+      }
     });
 
     // 允许滚轮滚动
@@ -998,7 +1026,7 @@ class ImagesViewer {
 
     const thumbImg = new Image();
     thumbImg.crossOrigin = 'anonymous';
-
+    thumbImg.src = '';
     // 加载状态容器
     const loadingContainer = document.createElement('div');
     loadingContainer.className = 'images-viewer-thumbnail-loading';
@@ -1019,10 +1047,26 @@ class ImagesViewer {
       };
       thumbImg.onerror = () => {
         loadingContainer.remove();
+        this.failedThumbnails.add(thumbnailUrl); // 添加到失败集合
         thumbImg.onload = null;
         thumbImg.onerror = null;
+
+        // 调用缩略图加载失败回调
+        if (this.options.onThumbnailError) {
+          this.options.onThumbnailError({
+            data: this.images[index],
+            index: index,
+            url: thumbnailUrl,
+            img: thumbImg,
+          });
+        } else {
+          console.error(`Thumbnail load failed: ${thumbnailUrl}`);
+        }
       };
       thumbImg.src = thumbnailUrl;
+    } else if (this.failedThumbnails.has(thumbnailUrl) && !this.options.retryOnError) {
+      // 缩略图加载失败且不重试，直接显示失败状态
+      loadingContainer.remove();
     } else if (this.loadedImages.has(imageUrl)) {
       // 使用实际图片缓存作为后备
       thumbImg.src = this.loadedImages.get(imageUrl).src;
@@ -1034,31 +1078,36 @@ class ImagesViewer {
       thumbImg.onload = () => {
         this.loadedThumbnails.set(thumbnailUrl, thumbImg);
         this.loadingThumbnails.delete(thumbnailUrl);
+        this.failedThumbnails.delete(thumbnailUrl); // 加载成功，从失败集合中移除
         loadingContainer.remove();
         thumbImg.onload = null;
         thumbImg.onerror = null;
       };
       thumbImg.onerror = () => {
         this.loadingThumbnails.delete(thumbnailUrl);
+        this.failedThumbnails.add(thumbnailUrl);
         loadingContainer.remove();
         thumbImg.onload = null;
         thumbImg.onerror = null;
-        console.warn(`Thumbnail load failed: ${thumbnailUrl}`);
+
+        // 调用缩略图加载失败回调
+        if (this.options.onThumbnailError) {
+          this.options.onThumbnailError({
+            data: this.images[index],
+            index: index,
+            url: thumbnailUrl,
+            img: thumbImg,
+          });
+        } else {
+          console.error(`Thumbnail load failed: ${thumbnailUrl}`);
+        }
       };
       thumbImg.src = thumbnailUrl;
     }
 
     thumbItem.appendChild(thumbImg);
 
-    this.addEvent(thumbItem, 'click', e => {
-      e.stopPropagation();
-      const clickedIndex = parseInt(thumbItem.dataset.index);
-      if (clickedIndex !== this.currentIndex) {
-        this.currentIndex = clickedIndex;
-        this.loadCurrentImage();
-        this.updateThumbnails();
-      }
-    });
+    // 移除单独的点击事件，使用委托事件
 
     container.appendChild(thumbItem);
   }
@@ -1072,8 +1121,10 @@ class ImagesViewer {
       const thumbImg = thumbnailItem.querySelector('img');
 
       if (thumbImg && this.loadedThumbnails.has(thumbnailUrl)) {
+        // 显示正常缩略图
         const cachedThumb = this.loadedThumbnails.get(thumbnailUrl);
         thumbImg.src = cachedThumb.src;
+        thumbImg.style.display = 'block';
 
         // 移除加载状态
         const loadingContainer = thumbnailItem.querySelector('.images-viewer-thumbnail-loading');
@@ -1207,13 +1258,20 @@ class ImagesViewer {
 
   loadImageAtIndex(index) {
     const url = this.getImageUrl(index);
-    if (!url || this.loadedImages.has(url) || this.loadingImages.has(url)) return;
+    if (
+      !url ||
+      this.loadedImages.has(url) ||
+      this.loadingImages.has(url) ||
+      (!this.options.retryOnError && this.failedImages.has(url))
+    )
+      return;
 
     const img = new Image();
 
     img.onload = () => {
       this.addToCache(url, img);
       this.loadingImages.delete(url);
+      this.failedImages.delete(url); // 加载成功，从失败集合中移除
 
       this.imageMetadata[index] = {
         name: this.extractFileName(url),
@@ -1223,12 +1281,34 @@ class ImagesViewer {
       img.onload = null;
       img.onerror = null;
     };
+
     img.onerror = () => {
       this.loadingImages.delete(url);
+      this.failedImages.add(url); // 添加到失败集合
       img.onload = null;
       img.onerror = null;
+
+      // 只有当前图片加载失败时才调用错误回调
+      const currentUrlCheck = this.getImageUrl(this.currentIndex);
+      if (url === currentUrlCheck) {
+        // 隐藏加载状态
+        this.hideLoading();
+        this.image.classList.add('loaded');
+
+        // 调用图片加载失败回调
+        if (this.options.onImageError) {
+          this.options.onImageError({
+            data: this.images[index],
+            index: index,
+            url: url,
+            img: this.image,
+          });
+        }
+      }
+
       console.error(`Image loading failed: ${url}`);
     };
+
     img.crossOrigin = 'anonymous';
     img.src = url;
     this.loadingImages.set(url, img);
@@ -1266,7 +1346,7 @@ class ImagesViewer {
       // 使用自定义函数生成页数显示
       if (this.options.onCounter) {
         onCounter = this.options.onCounter({
-          image: this.images[this.currentIndex],
+          data: this.images[this.currentIndex],
           index: this.currentIndex,
           currentPage: this.currentIndex + 1,
           totalPages: this.images.length,
@@ -1332,13 +1412,20 @@ class ImagesViewer {
 
   loadThumbnailAtIndex(index) {
     const thumbnailUrl = this.getThumbnailUrl(index);
-    if (!thumbnailUrl || this.loadedThumbnails.has(thumbnailUrl) || this.loadingThumbnails.has(thumbnailUrl)) return;
+    if (
+      !thumbnailUrl ||
+      this.loadedThumbnails.has(thumbnailUrl) ||
+      this.loadingThumbnails.has(thumbnailUrl) ||
+      (!this.options.retryOnError && this.failedThumbnails.has(thumbnailUrl))
+    )
+      return;
 
     const img = new Image();
 
     img.onload = () => {
       this.loadedThumbnails.set(thumbnailUrl, img);
       this.loadingThumbnails.delete(thumbnailUrl);
+      this.failedThumbnails.delete(thumbnailUrl); // 加载成功，从失败集合中移除
       // 更新对应的缩略图显示
       this.updateThumbnailDisplay(index);
       img.onload = null;
@@ -1347,9 +1434,35 @@ class ImagesViewer {
 
     img.onerror = () => {
       this.loadingThumbnails.delete(thumbnailUrl);
+      this.failedThumbnails.add(thumbnailUrl); // 添加到失败集合
       img.onload = null;
       img.onerror = null;
-      console.error(`Thumbnail load failed: ${thumbnailUrl}`);
+
+      // 找到对应的缩略图元素
+      let thumbImg = null;
+      if (this.thumbContainer) {
+        const thumbnailItem = this.thumbContainer.querySelector(`[data-index="${index}"]`);
+        if (thumbnailItem) {
+          thumbImg = thumbnailItem.querySelector('img');
+          // 移除加载状态
+          const loadingContainer = thumbnailItem.querySelector('.images-viewer-thumbnail-loading');
+          if (loadingContainer) {
+            loadingContainer.remove();
+          }
+        }
+      }
+
+      // 调用缩略图加载失败回调
+      if (this.options.onThumbnailError) {
+        this.options.onThumbnailError({
+          data: this.images[index],
+          index: index,
+          url: thumbnailUrl,
+          img: thumbImg,
+        });
+      } else {
+        console.error(`Thumbnail load failed: ${thumbnailUrl}`);
+      }
     };
 
     img.crossOrigin = 'anonymous';
@@ -1361,10 +1474,12 @@ class ImagesViewer {
     const currentUrl = this.getImageUrl(this.currentIndex);
     const isLoaded = this.loadedImages.has(currentUrl);
     const isLoading = this.loadingImages.has(currentUrl);
+    const isFailed = this.failedImages.has(currentUrl);
 
     this.showLoading();
     this.image.classList.remove('loaded');
     this.image.src = '';
+
     // 如果图片已加载，直接显示
     if (isLoaded) {
       const cachedImg = this.loadedImages.get(currentUrl);
@@ -1408,16 +1523,49 @@ class ImagesViewer {
       return;
     }
 
+    // 如果图片加载失败且不重试，直接显示失败状态
+    if (isFailed && !this.options.retryOnError) {
+      this.hideLoading();
+      this.image.classList.add('loaded');
+
+      // 调用图片加载失败回调
+      if (this.options.onImageError) {
+        this.options.onImageError({
+          data: this.images[this.currentIndex],
+          index: this.currentIndex,
+          url: currentUrl,
+          img: this.image,
+        });
+      }
+      return;
+    }
+
     // 如果图片正在加载中，等待加载完成
     if (isLoading) {
       const checkLoaded = () => {
+        const currentUrlCheck = this.getImageUrl(this.currentIndex);
         if (this.loadedImages.has(currentUrl)) {
-          this.isImageLoaded();
+          // 只有当前图片加载完成时才处理
+          if (currentUrl === currentUrlCheck) {
+            this.isImageLoaded();
+          }
         } else if (this.loadingImages.has(currentUrl)) {
           setTimeout(checkLoaded, 100);
         } else {
           this.hideLoading();
-          console.error('Image loading failed', currentUrl);
+          // 只有当前图片加载失败时才调用错误回调
+          if (currentUrl === currentUrlCheck) {
+            this.image.classList.add('loaded');
+
+            if (this.options.onImageError) {
+              this.options.onImageError({
+                data: this.images[this.currentIndex],
+                index: this.currentIndex,
+                url: currentUrl,
+                img: this.image,
+              });
+            }
+          }
         }
       };
       setTimeout(checkLoaded, 100);
@@ -1440,7 +1588,20 @@ class ImagesViewer {
     img.onerror = () => {
       this.loadingImages.delete(currentUrl);
       this.hideLoading();
-      console.error('Image loading failed', currentUrl);
+      // 只有当前图片加载失败时才调用错误回调
+      const currentUrlCheck = this.getImageUrl(this.currentIndex);
+      if (currentUrl === currentUrlCheck) {
+        this.image.classList.add('loaded');
+
+        if (this.options.onImageError) {
+          this.options.onImageError({
+            data: this.images[this.currentIndex],
+            index: this.currentIndex,
+            url: currentUrl,
+            img: this.image,
+          });
+        }
+      }
     };
 
     img.crossOrigin = 'anonymous';
@@ -1455,7 +1616,7 @@ class ImagesViewer {
     // 使用自定义函数生成缩放指数显示
     if (this.options.onZoomIndicator) {
       const onZoomIndicator = this.options.onZoomIndicator({
-        image: this.images[this.currentIndex],
+        data: this.images[this.currentIndex],
         index: this.currentIndex,
         scale: this.scale,
         percentage: percentage,
@@ -1484,7 +1645,7 @@ class ImagesViewer {
     // 使用自定义函数生成信息栏内容
     if (this.options.onInfo) {
       infoHtml = this.options.onInfo({
-        image: this.images[this.currentIndex],
+        data: this.images[this.currentIndex],
         index: this.currentIndex,
         metadata: metadata,
         scale: this.scale,
@@ -1575,12 +1736,21 @@ class ImagesViewer {
     if (newIndex < 0) {
       newIndex = this.options.loop ? this.images.length - 1 : 0;
     }
-
+    const oldIndex = this.currentIndex;
     if (newIndex !== this.currentIndex) {
       this.currentIndex = newIndex;
       this.loadCurrentImage();
     }
-    if (this.options.onChange) this.options.onChange(this.currentIndex, 'prev');
+    if (this.options.onChange) {
+      this.options.onChange({
+        oldIndex: oldIndex,
+        index: this.currentIndex,
+        data: this.images[this.currentIndex],
+        direction: 'prev',
+        img: this.image,
+        dom: this.container,
+      });
+    }
   }
 
   next() {
@@ -1595,7 +1765,18 @@ class ImagesViewer {
       this.currentIndex = newIndex;
       this.loadCurrentImage();
     }
-    if (this.options.onChange) this.options.onChange(this.currentIndex, 'next');
+    const oldIndex = this.currentIndex;
+    if (this.options.onChange) {
+      this.options.onChange({
+        oldIndex: oldIndex,
+        index: this.currentIndex,
+        data: this.images[this.currentIndex],
+        index: this.currentIndex,
+        direction: 'next',
+        img: this.image,
+        dom: this.container,
+      });
+    }
   }
 
   bindEvents() {
@@ -1678,9 +1859,8 @@ class ImagesViewer {
 
       // 触发拖动事件
       if (this.options.onDrag) {
-        const currentImage = this.images[this.currentIndex];
         this.options.onDrag({
-          image: currentImage,
+          data: his.images[this.currentIndex],
           index: this.currentIndex,
           translateX: this.translateX,
           translateY: this.translateY,
@@ -1844,10 +2024,9 @@ class ImagesViewer {
           this.updateImageTransform();
 
           // 触发拖动事件
-          if (this.options.drag) {
-            const currentImage = this.images[this.currentIndex];
-            this.options.drag({
-              image: currentImage,
+          if (this.options.onDrag) {
+            this.options.onDrag({
+              data: this.images[this.currentIndex],
               index: this.currentIndex,
               translateX: this.translateX,
               translateY: this.translateY,
@@ -1891,9 +2070,8 @@ class ImagesViewer {
 
           // 触发缩放事件
           if (this.options.onZoom) {
-            const currentImage = this.images[this.currentIndex];
             this.options.onZoom({
-              image: currentImage,
+              data: this.images[this.currentIndex],
               index: this.currentIndex,
               scale: this.scale,
               oldScale: this.touchState.initialScale,
@@ -1973,10 +2151,9 @@ class ImagesViewer {
     this.updateZoomIndicator();
 
     // 触发缩放事件
-    if (this.options.zoom) {
-      const currentImage = this.images[this.currentIndex];
-      this.options.zoom({
-        image: currentImage,
+    if (this.options.onZoom) {
+      this.options.onZoom({
+        data: this.images[this.currentIndex],
         index: this.currentIndex,
         scale: this.scale,
         oldScale: oldScale,
@@ -2023,9 +2200,8 @@ class ImagesViewer {
 
     // 触发旋转事件
     if (this.options.onRotate) {
-      const currentImage = this.images[this.currentIndex];
       this.options.onRotate({
-        image: currentImage,
+        data: this.images[this.currentIndex],
         index: this.currentIndex,
         rotation: this.rotation,
         oldRotation: oldRotation,

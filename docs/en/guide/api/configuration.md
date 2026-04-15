@@ -13,7 +13,7 @@ Detailed configuration options for ImagesViewer.
 **Type:** `string | string[] | ImageObject[]`
 **Required:** Yes
 
-Images to display, supporting single URL, URL array, or image object array.
+Images to display, supports single URL, URL array, or image object array.
 
 ```javascript
 // Single image
@@ -39,25 +39,25 @@ const viewer = new ImagesViewer({
 });
 ```
 
-**Image Object Properties:**
-- `url`: Image URL (required) 
+**Image object properties:**
+- `url`: Image URL (required)
 - `title`: Image title (optional)
 - `thumbnail`: Thumbnail URL (optional)
-- Other custom properties: Can add any custom properties, accessible in event callbacks
+- Other custom properties: Can add any custom properties, accessed in event callbacks
 
 ### `props`
 
 **Type:** `object`
 **Default:** `{ url: 'url', title: 'title', thumbnail: 'thumbnail' }`
 
-Custom image object property mapping, supporting string and function forms.
+Custom image object property mapping, supports string and function forms.
 
 **Properties:**
 - `url`: Property name or getter function for image URL
 - `title`: Property name or getter function for image title
 - `thumbnail`: Property name or getter function for thumbnail URL
 
-**Usage Examples:**
+**Usage examples:**
 
 ```javascript
 // Custom property mapping (string form)
@@ -95,6 +95,74 @@ const viewer = new ImagesViewer({
 });
 ```
 
+### `retryOnError`
+
+**Type:** `boolean`
+**Default:** `false`
+
+Whether to retry after image or thumbnail load failure.
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg'],
+  retryOnError: true // Retry after load failure
+});
+```
+
+### `onImageError`
+
+**Type:** `(data: ErrorCallbackParams) => void`
+
+Callback function when image load fails. Returns a string to update alt attribute, otherwise uses default value.
+
+**Callback parameters:**
+- `data`: Current image object
+- `index`: Current image index
+- `url`: Failed image URL
+- `img`: Corresponding image DOM element
+
+**Usage example:**
+
+```javascript
+const viewer = new ImagesViewer({
+  images: [
+    { url: 'https://example.com/image1.jpg', title: 'Image 1' },
+    { url: 'https://example.com/image2.jpg', title: 'Image 2' }
+  ],
+  onImageError: (data) => {
+    // Custom DOM operation
+    data.img.alt = 'Image load failed';
+  }
+});
+```
+
+### `onThumbnailError`
+
+**Type:** `(data: ErrorCallbackParams) => void`
+
+Callback function when thumbnail load fails. Returns a string to update alt attribute, otherwise uses default value.
+
+**Callback parameters:**
+- `data`: Current image object
+- `index`: Current image index
+- `url`: Failed thumbnail URL
+- `img`: Corresponding thumbnail DOM element
+
+**Usage example:**
+
+```javascript
+const viewer = new ImagesViewer({
+  images: [
+    { url: 'https://example.com/image1.jpg', title: 'Image 1' },
+    { url: 'https://example.com/image2.jpg', title: 'Image 2' }
+  ],
+  onThumbnailError: (data) => {
+    // Custom DOM operation
+    data.img.alt = 'Thumbnail load failed';
+  }
+});
+```
+
 ### `initialIndex`
 
 **Type:** `number`
@@ -105,7 +173,7 @@ Initial image index to display.
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg', 'image3.jpg'],
-  initialIndex: 1 // Start from the second image
+  initialIndex: 1 // Start from second image
 });
 ```
 
@@ -151,7 +219,7 @@ Minimum zoom scale (10%).
 
 Maximum zoom scale (500%).
 
-## Buttons Configuration
+## Button Configuration
 
 ### `buttons`
 
@@ -173,7 +241,7 @@ const viewer = new ImagesViewer({
     prev: true,           // Previous
     next: true,           // Next
     close: true,          // Close
-    topClose: true,       // Top-right close
+    topClose: true,       // Top right close
     thumbnails: true,     // Thumbnails
     info: true,           // Info panel
     originalSize: true    // Original size
@@ -187,7 +255,7 @@ const viewer = new ImagesViewer({
 
 **Type:** `Array<[string, () => void]>`
 
-Array of custom buttons to add to the toolbar.
+Custom button array to add to toolbar.
 
 ```javascript
 const viewer = new ImagesViewer({
@@ -205,14 +273,14 @@ const viewer = new ImagesViewer({
 
 **Type:** `object`
 
-Image information display configuration.
+Image info display configuration.
 
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg'],
   imageInfo: {
     visible: false,      // Show info panel by default
-    showName: true,      // Show filename
+    showName: true,      // Show file name
     showDimensions: true // Show image dimensions
   }
 });
@@ -232,11 +300,11 @@ const viewer = new ImagesViewer({
   i18n: {
     info: {
       name: 'Name:',
-      dimensions: 'Size:',
+      dimensions: 'Dimensions:',
       shortcuts: 'Shortcuts',
-      zoomIn: 'Zoom In:',
-      zoomOut: 'Zoom Out:',
-      prev: 'Previous:',
+      zoomIn: 'Zoom in:',
+      zoomOut: 'Zoom out:',
+      prev: 'Prev:',
       next: 'Next:',
       reset: 'Reset:',
       fullscreen: 'Fullscreen:',
@@ -244,7 +312,7 @@ const viewer = new ImagesViewer({
       close: 'Close:'
     },
     buttons: {
-      prev: 'Previous (←)',
+      prev: 'Prev (←)',
       next: 'Next (→)',
       close: 'Close (Esc)',
       loading: 'Loading...'
@@ -267,27 +335,27 @@ const viewer = new ImagesViewer({
   theme: {
     // Background
     viewerBgColor: 'rgba(0, 0, 0, 0.9)',
-    
+
     // Toolbar
     toolbarBgColor: 'rgba(30, 30, 30, 0.8)',
     toolbarBorderRadius: '8px',
     toolbarPadding: '10px 15px',
     toolbarBottom: '20px',
-    
+
     // Buttons
     buttonBgColor: 'rgba(50, 50, 50, 0.7)',
     buttonHoverBg: 'rgba(80, 80, 80, 0.7)',
     buttonSize: '45px',
     buttonFontSize: '20px',
     buttonBorderRadius: '50%',
-    
+
     // Thumbnails
     thumbItemWidth: '80px',
     thumbItemHeight: '50px',
     thumbGap: '10px',
     thumbPadding: '15px',
     thumbMaxWidth: '70%',
-    
+
     // General
     activeColor: 'rgba(100, 150, 255, 0.8)',
     textColor: 'rgba(255, 255, 255, 0.9)',
@@ -301,9 +369,9 @@ const viewer = new ImagesViewer({
 
 ### `onShow`
 
-**Type:** `(container: HTMLElement) => void`
+**Type:** `(container: HTMLDivElement) => void`
 
-Triggered when the viewer is shown.
+Triggered when viewer is shown.
 
 ```javascript
 const viewer = new ImagesViewer({
@@ -318,31 +386,77 @@ const viewer = new ImagesViewer({
 
 **Type:** `() => void`
 
-Triggered when the viewer is closed.
+Triggered when viewer is closed.
 
 ### `onChange`
 
-**Type:** `(currentIndex: number, direction: 'prev' | 'next') => void`
+**Type:** `(data: ChangeEventData) => void`
 
-Triggered when the image is changed.
+Triggered when image changes.
+
+**Callback parameters:**
+- `index`: Current image index
+- `oldIndex`: Previous image index
+- `direction`: Change direction ('next' | 'prev')
+- `data`: Current image data
+- `img`: Current image DOM element
+- `dom`: Viewer container DOM element
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg'],
+  onChange: function(data) {
+    console.log('Switched to image:', data.index);
+    console.log('From image:', data.oldIndex);
+    console.log('Direction:', data.direction);
+  }
+});
+```
 
 ### `onRotate`
 
 **Type:** `(data: RotateEventData) => void`
 
-Triggered when the image is rotated.
+Triggered when image is rotated.
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  onRotate: function(data) {
+    console.log('Image rotated:', data.rotation);
+  }
+});
+```
 
 ### `onDrag`
 
 **Type:** `(data: DragEventData) => void`
 
-Triggered when the image is dragged.
+Triggered when image is dragged.
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  onDrag: function(data) {
+    console.log('Image dragged:', data.translateX, data.translateY);
+  }
+});
+```
 
 ### `onZoom`
 
 **Type:** `(data: ZoomEventData) => void`
 
-Triggered when the image is zoomed.
+Triggered when image is zoomed.
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  onZoom: function(data) {
+    console.log('Image zoomed:', data.scale);
+  }
+});
+```
 
 ## Custom Functions
 
@@ -377,7 +491,7 @@ Custom page counter display.
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg'],
   onCounter: function(data) {
-    return `Image ${data.currentPage} / ${data.totalPages}`;
+    return `Page ${data.currentPage} of ${data.totalPages}`;
   }
 });
 ```
@@ -397,7 +511,7 @@ const viewer = new ImagesViewer({
 });
 ```
 
-## Full Configuration Example
+## Complete Configuration Example
 
 ```javascript
 const viewer = new ImagesViewer({
@@ -410,7 +524,15 @@ const viewer = new ImagesViewer({
   maxCacheSize: 30,
   minScale: 0.1,
   maxScale: 5,
-  
+  retryOnError: false,
+
+  // Property mapping
+  props: {
+    url: 'url',
+    title: 'title',
+    thumbnail: 'thumbnail'
+  },
+
   // Buttons
   buttons: {
     zoomIn: true,
@@ -428,29 +550,29 @@ const viewer = new ImagesViewer({
     info: true,
     originalSize: true
   },
-  
+
   // Custom buttons
   customButtons: [
     ['🔍', () => console.log('Search')],
     ['📌', () => console.log('Pin')]
   ],
-  
+
   // Image info
   imageInfo: {
     visible: false,
     showName: true,
     showDimensions: true
   },
-  
+
   // Internationalization
   i18n: {
     info: {
       name: 'Name:',
-      dimensions: 'Size:',
+      dimensions: 'Dimensions:',
       shortcuts: 'Shortcuts',
-      zoomIn: 'Zoom In:',
-      zoomOut: 'Zoom Out:',
-      prev: 'Previous:',
+      zoomIn: 'Zoom in:',
+      zoomOut: 'Zoom out:',
+      prev: 'Prev:',
       next: 'Next:',
       reset: 'Reset:',
       fullscreen: 'Fullscreen:',
@@ -458,13 +580,13 @@ const viewer = new ImagesViewer({
       close: 'Close:'
     },
     buttons: {
-      prev: 'Previous (←)',
+      prev: 'Prev (←)',
       next: 'Next (→)',
       close: 'Close (Esc)',
       loading: 'Loading...'
     }
   },
-  
+
   // Theme
   theme: {
     viewerBgColor: 'rgba(0, 0, 0, 0.9)',
@@ -472,7 +594,7 @@ const viewer = new ImagesViewer({
     buttonBgColor: 'rgba(50, 50, 50, 0.7)',
     textColor: 'rgba(255, 255, 255, 0.9)'
   },
-  
+
   // Event callbacks
   onShow: function(container) {
     console.log('Viewer shown');
@@ -480,21 +602,25 @@ const viewer = new ImagesViewer({
   onClose: function() {
     console.log('Viewer closed');
   },
-  onChange: function(index, direction) {
-    console.log('Image changed:', index, direction);
+  onChange: function(data) {
+    console.log('Image changed:', data.index, data.direction);
   },
-  
-  // Event listeners
   onRotate: function(data) {
-    console.log('Image rotated:', data);
+    console.log('Image rotated:', data.rotation);
   },
   onDrag: function(data) {
-    console.log('Image dragged:', data);
+    console.log('Image dragged:', data.translateX, data.translateY);
   },
   onZoom: function(data) {
-    console.log('Image zoomed:', data);
+    console.log('Image zoomed:', data.scale);
   },
-  
+  onImageError: function(data) {
+    console.log('Image load failed:', data.url);
+  },
+  onThumbnailError: function(data) {
+    console.log('Thumbnail load failed:', data.url);
+  },
+
   // Custom functions
   onInfo: function(data) {
     return `
@@ -506,7 +632,7 @@ const viewer = new ImagesViewer({
     `;
   },
   onCounter: function(data) {
-    return `Image ${data.currentPage} / ${data.totalPages}`;
+    return `Page ${data.currentPage} of ${data.totalPages}`;
   },
   onZoomIndicator: function(data) {
     return `Zoom: ${data.percentage}%`;

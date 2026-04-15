@@ -263,8 +263,8 @@ const viewer = new ImagesViewer({
     console.log('查看器关闭');
     // 清理资源
   },
-  onChange: function(index, direction) {
-    console.log(`切换到图片 ${index} (${direction})`);
+  onChange: function(data) {
+    console.log(`切换到图片 ${data.index}`);
     // 跟踪图片视图
   }
 });

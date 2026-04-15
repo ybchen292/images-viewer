@@ -136,8 +136,8 @@ const viewer = new ImagesViewer({
   onClose: function() {
     console.log('查看器关闭');
   },
-  onChange: function(currentIndex, direction) {
-    console.log('图片改变:', currentIndex, direction);
+  onChange: function(data) { 
+    console.log('图片改变:', data);
   }
 });
 ```

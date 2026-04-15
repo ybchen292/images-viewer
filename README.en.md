@@ -48,9 +48,6 @@ const viewer4 = new ImagesViewer({
     {
       url: 'https://example.com/image1.jpg',
       title: 'Landscape Image',
-      // title: (currentImage, index) => {
-      //          return `图片${index + 1}`;
-      // },
       thumbnail: 'https://example.com/thumb1.jpg',
     },
     {
@@ -172,6 +169,9 @@ const viewer = new ImagesViewer({
   // Maximum cache size
   maxCacheSize: 30,
 
+  // Whether to retry after failure
+  retryOnError: false,
+
   // Button configuration
   buttons: {
     zoomIn: true, // Zoom in
@@ -207,30 +207,37 @@ const viewer = new ImagesViewer({
 
   // Event callbacks
   onShow: function(container) {
-    console.log('Viewer shown');
+    console.log('Viewer shown:', container);
   },
 
   onClose: function() {
     console.log('Viewer closed');
   },
 
-  onChange: function(currentIndex, direction) {
-    console.log('Image changed:', currentIndex, direction);
+  onChange: function(data) {
+    console.log('Switched to image:', data.index);
+    console.log('From image:', data.oldIndex);
+    console.log('Direction:', data.direction);
   },
 
-  // Rotation event
   onRotate: function(data) {
-    console.log('Image rotated:', data);
+    console.log('Image rotated:', data.rotation);
   },
 
-  // Drag event
   onDrag: function(data) {
-    console.log('Image dragged:', data);
+    console.log('Image dragged:', data.translateX, data.translateY);
   },
 
-  // Zoom event
   onZoom: function(data) {
-    console.log('Image zoomed:', data);
+    console.log('Image zoomed:', data.scale);
+  },
+
+  onImageError: function(data) {
+    console.log('Image load failed:', data.url);
+  },
+
+  onThumbnailError: function(data) {
+    console.log('Thumbnail load failed:', data.url);
   },
 
   // Custom info bar function
@@ -497,13 +504,12 @@ const viewer = new ImagesViewer({
       },
     ],
   ],
-  onChange: (index, direction) => {
-    // direction: 'prev' | 'next'
-    console.log(index, direction);
+  onChange: (data) => {
+    console.log('Image changed:', data.index, data.direction);
   },
-  onShow: dom => {
+  onShow: (container) => {
     // Custom button
-    const toolbar = dom.querySelector('.images-viewer-toolbar');
+    const toolbar = container.querySelector('.images-viewer-toolbar');
     const button = document.createElement('button');
     button.className = 'images-viewer-tool-btn';
 
@@ -513,10 +519,8 @@ const viewer = new ImagesViewer({
 
     button.addEventListener('click', e => {
       console.log('test');
-      // e.stopPropagation();
     });
     toolbar.appendChild(button);
-    console.log('onShow', dom);
   },
   onClose: () => {
     console.log('close');

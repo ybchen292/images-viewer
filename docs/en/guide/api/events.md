@@ -88,13 +88,13 @@ const viewer = new ImagesViewer({
     console.log('Product gallery closed');
     analytics.track('gallery_closed');
   },
-  onChange: function(index, direction) {
-    console.log(`Viewing product ${index + 1}`);
+  onChange: function(data) {
+    console.log(`Viewing product ${data.index + 1}`);
     analytics.track('product_view', {
-      productId: productIds[index],
-      position: index + 1,
+      productId: productIds[data.index],
+      position: data.index + 1,
       total: productImages.length,
-      direction: direction
+      direction: data.direction 
     });
   }
 });

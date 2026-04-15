@@ -40,13 +40,17 @@ const viewer = new ImagesViewer({
 
 ### `onChange`
 
-**类型：** `(currentIndex: number, direction: 'prev' | 'next') => void`
+**类型：** `(data: ChangeEventData) => void`
 
 图片切换时触发。
 
 **参数：**
-- `currentIndex`：新显示图片的索引
-- `direction`：导航方向（`'prev'` 或 `'next'`）
+- `data`：新显示图片的索引
+- `index`：新显示图片的索引
+- `oldIndex`：旧显示图片的索引
+- `direction`：导航方向（`'prev'` 或 `'next'`） 
+- `img`：新显示图片的元素引用
+- `dom`：查看器主容器元素引用
 
 ### `onRotate`
 
@@ -88,13 +92,13 @@ const viewer = new ImagesViewer({
     console.log('产品图库关闭');
     analytics.track('gallery_closed');
   },
-  onChange: function(index, direction) {
-    console.log(`查看产品 ${index + 1}`);
+  onChange: function(data) {
+    console.log(`查看产品 ${data.index + 1}`);
     analytics.track('product_view', {
-      productId: productIds[index],
-      position: index + 1,
+      productId: productIds[data.index],
+      position: data.index + 1,
       total: productImages.length,
-      direction: direction
+      direction: data.direction
     });
   }
 });

@@ -108,15 +108,6 @@ export default defineConfig({
             { text: 'TypeScript 类型', link: '/guide/api/types' },
           ],
         },
-        {
-          text: '示例',
-          items: [
-            { text: '基础示例', link: '/guide/examples/basic' },
-            { text: '自定义主题', link: '/guide/examples/custom-theme' },
-            { text: '国际化示例', link: '/guide/examples/i18n' },
-            { text: '高级配置', link: '/guide/examples/advanced' },
-          ],
-        },
       ],
       '/en/': [
         {
@@ -136,15 +127,6 @@ export default defineConfig({
             { text: 'Methods', link: '/en/guide/api/methods' },
             { text: 'Events', link: '/en/guide/api/events' },
             { text: 'TypeScript Types', link: '/en/guide/api/types' },
-          ],
-        },
-        {
-          text: 'Examples',
-          items: [
-            { text: 'Basic Example', link: '/en/guide/examples/basic' },
-            { text: 'Custom Theme', link: '/en/guide/examples/custom-theme' },
-            { text: 'Internationalization', link: '/en/guide/examples/i18n' },
-            { text: 'Advanced Configuration', link: '/en/guide/examples/advanced' },
           ],
         },
       ],

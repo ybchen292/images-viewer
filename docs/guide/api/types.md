@@ -53,7 +53,7 @@ const viewer = new ImagesViewer({
 
 ```typescript
 interface RotateEventData {
-  image: string | ImageObject;  // 当前图片数据
+  data: string | ImageObject;  // 当前图片数据
   index: number;              // 当前图片索引
   rotation: number;           // 当前旋转角度
   oldRotation: number;        // 旧的旋转角度
@@ -68,8 +68,8 @@ const viewer = new ImagesViewer({
   onRotate: (data: RotateEventData) => {
     console.log('旋转角度:', data.rotation);
     console.log('图片索引:', data.index);
-    if (typeof data.image === 'object') {
-      console.log('图片标题:', data.image.title);
+    if (typeof data.data === 'object') {
+      console.log('图片标题:', data.data.title);
     }
   }
 });
@@ -81,7 +81,7 @@ const viewer = new ImagesViewer({
 
 ```typescript
 interface DragEventData {
-  image: string | ImageObject;  // 当前图片数据
+  data: string | ImageObject;  // 当前图片数据
   index: number;              // 当前图片索引
   translateX: number;         // 当前 X 轴偏移量
   translateY: number;         // 当前 Y 轴偏移量
@@ -105,10 +105,10 @@ const viewer = new ImagesViewer({
 
 ```typescript
 interface ZoomEventData {
-  image: string | ImageObject;  // 当前图片数据
+  data: string | ImageObject;  // 当前图片数据
   index: number;              // 当前图片索引
   scale: number;              // 当前缩放比例
-  oldScale: number;          // 旧的缩放比例
+  oldScale: number;           // 旧的缩放比例
 }
 ```
 
@@ -124,6 +124,67 @@ const viewer = new ImagesViewer({
 });
 ```
 
+### ChangeEventData
+
+切换事件参数。
+
+```typescript
+interface ChangeEventData {
+  index: number;              // 当前图片索引
+  oldIndex: number;          // 旧的图片索引
+  direction: 'next' | 'prev'; // 切换方向
+  data: string | ImageObject; // 当前图片数据
+  img: HTMLImageElement;      // 当前图片 DOM 元素
+  dom: HTMLDivElement;        // 查看器容器 DOM 元素
+}
+```
+
+**使用示例：**
+
+```typescript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg'],
+  onChange: (data: ChangeEventData) => {
+    console.log('切换到图片:', data.index);
+    console.log('从图片:', data.oldIndex);
+    console.log('切换方向:', data.direction);
+  }
+});
+```
+
+### ErrorCallbackParams
+
+错误回调参数。
+
+```typescript
+interface ErrorCallbackParams {
+  data: string | ImageObject; // 当前图片数据
+  index: number;               // 当前图片索引
+  url: string;                  // 加载失败的图片 URL
+  img: HTMLImageElement | null; // 对应的图片或缩略图 DOM 元素
+}
+```
+
+**使用示例：**
+
+```typescript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg'],
+  onImageError: (data: ErrorCallbackParams) => {
+    console.log('图片加载失败:', data.url);
+    // 返回字符串更新 alt 属性
+    return `图片加载失败: ${data.url}`;
+  },
+  onThumbnailError: (data: ErrorCallbackParams) => {
+    console.log('缩略图加载失败:', data.url);
+    // 自定义 DOM 操作
+    if (data.img) {
+      data.img.alt = '缩略图加载失败';
+    }
+  }
+});
+```
+
 ## 自定义函数类型
 
 ### InfoTextParams
@@ -132,7 +193,7 @@ const viewer = new ImagesViewer({
 
 ```typescript
 interface InfoTextParams {
-  image: string | ImageObject;  // 当前图片数据
+  data: string | ImageObject;  // 当前图片数据
   index: number;              // 当前图片索引
   metadata: {
     name: string;              // 文件名
@@ -168,9 +229,9 @@ const viewer = new ImagesViewer({
 
 ```typescript
 interface CounterParams {
-  image: string | ImageObject;  // 当前图片数据
+  data: string | ImageObject;  // 当前图片数据
   index: number;              // 当前图片索引
-  currentPage: number;        // 当前页码（从1开始）
+  currentPage: number;         // 当前页码（从1开始）
   totalPages: number;         // 总页数
   scale: number;              // 当前缩放比例
   rotation: number;           // 当前旋转角度
@@ -194,10 +255,11 @@ const viewer = new ImagesViewer({
 
 ```typescript
 interface ZoomIndicatorParams {
-  image: string | ImageObject;  // 当前图片数据
+  data: string | ImageObject;  // 当前图片数据
   index: number;              // 当前图片索引
   scale: number;              // 当前缩放比例
-  percentage: number;         // 缩放百分比
+  percentage: number;          // 缩放百分比
+  rotation: number;           // 当前旋转角度
 }
 ```
 
@@ -230,6 +292,9 @@ interface ImagesViewerOptions {
   minScale?: number;
   maxScale?: number;
 
+  // 是否在失败后重新请求
+  retryOnError?: boolean;
+
   // 按钮配置
   buttons?: {
     zoomIn?: boolean;
@@ -258,12 +323,29 @@ interface ImagesViewerOptions {
     showDimensions?: boolean;
   };
 
-  // 图片信息显示配置
+  // 属性映射配置
   props?: {
-    url?: string;
-    title?: string;
-    thumbnail?: string;
+    url?: string | ((item: any, index: number) => string);
+    title?: string | ((item: any, index: number) => string);
+    thumbnail?: string | ((item: any, index: number) => string);
   };
+
+  // 错误回调
+  onImageError?: (data: ErrorCallbackParams) => void;
+  onThumbnailError?: (data: ErrorCallbackParams) => void;
+
+  // 事件回调
+  onShow?: (container: HTMLDivElement) => void;
+  onClose?: () => void;
+  onChange?: (data: ChangeEventData) => void;
+  onRotate?: (data: RotateEventData) => void;
+  onDrag?: (data: DragEventData) => void;
+  onZoom?: (data: ZoomEventData) => void;
+
+  // 自定义函数
+  onInfo?: (data: InfoTextParams) => string | null | undefined;
+  onCounter?: (data: CounterParams) => string | null | undefined;
+  onZoomIndicator?: (data: ZoomIndicatorParams) => string | null | undefined;
 
   // 国际化配置
   i18n?: {
@@ -333,19 +415,6 @@ interface ImagesViewerOptions {
     shadowColor?: string;
     transitionSpeed?: string;
   };
-
-  // 事件回调
-  onShow?: (container: HTMLElement) => void;
-  onClose?: () => void;
-  onChange?: (currentIndex: number, direction: 'prev' | 'next') => void;
-  onRotate?: (data: RotateEventData) => void;
-  onDrag?: (data: DragEventData) => void;
-  onZoom?: (data: ZoomEventData) => void;
-
-  // 自定义函数
-  onInfo?: (data: InfoTextParams) => string | null | undefined;
-  onCounter?: (data: CounterParams) => string | null | undefined;
-  onZoomIndicator?: (data: ZoomIndicatorParams) => string | null | undefined;
 }
 ```
 
@@ -380,7 +449,8 @@ const options: ImagesViewerOptions = {
   maxCacheSize: 30,
   minScale: 0.1,
   maxScale: 5,
-  
+  retryOnError: false,
+
   buttons: {
     zoomIn: true,
     zoomOut: true,
@@ -397,32 +467,46 @@ const options: ImagesViewerOptions = {
     info: true,
     originalSize: true
   },
-  
-  onShow: (container: HTMLElement) => {
+
+  props: {
+    url: 'url',
+    title: 'title',
+    thumbnail: 'thumbnail'
+  },
+
+  onShow: (container: HTMLDivElement) => {
     console.log('查看器显示');
   },
-  
+
   onClose: () => {
     console.log('查看器关闭');
   },
-  
-  onChange: (index: number, direction: 'prev' | 'next') => {
-    console.log('图片切换:', index, direction);
+
+  onChange: (data) => {
+    console.log('图片切换:', data.index, data.direction);
   },
-  
-  onRotate: (data: RotateEventData) => {
+
+  onRotate: (data) => {
     console.log('图片旋转:', data.rotation);
   },
-  
-  onDrag: (data: DragEventData) => {
+
+  onDrag: (data) => {
     console.log('图片拖动:', data.translateX, data.translateY);
   },
-  
-  onZoom: (data: ZoomEventData) => {
+
+  onZoom: (data) => {
     console.log('图片缩放:', data.scale);
   },
-  
-  onInfo: (data: InfoTextParams): string => {
+
+  onImageError: (data) => {
+    console.log('图片加载失败:', data.url);
+  },
+
+  onThumbnailError: (data) => {
+    console.log('缩略图加载失败:', data.url);
+  },
+
+  onInfo: (data): string => {
     const title = typeof data.image === 'object' ? data.image.title : data.metadata.name;
     return `
       <div class="custom-info">
@@ -432,12 +516,12 @@ const options: ImagesViewerOptions = {
       </div>
     `;
   },
-  
-  onCounter: (data: CounterParams): string => {
+
+  onCounter: (data): string => {
     return `${data.currentPage} / ${data.totalPages}`;
   },
-  
-  onZoomIndicator: (data: ZoomIndicatorParams): string => {
+
+  onZoomIndicator: (data): string => {
     return `缩放: ${data.percentage}%`;
   }
 };
@@ -464,7 +548,7 @@ const viewer4 = new ImagesViewer({
 });
 
 const viewer5 = new ImagesViewer({
-  onRotate: (data: RotateEventData) => {
+  onRotate: (data) => {
     console.log(data.invalidProperty);  // 错误：invalidProperty 不存在
   }
 });

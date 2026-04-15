@@ -95,6 +95,74 @@ const viewer = new ImagesViewer({
 });
 ```
 
+### `retryOnError`
+
+**类型：** `boolean`
+**默认值：** `false`
+
+是否在图片或缩略图加载失败后重新请求。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg'],
+  retryOnError: true // 加载失败后重新请求
+});
+```
+
+### `onImageError`
+
+**类型：** `(data: ErrorCallbackParams) => void`
+
+图片加载失败时的回调函数。返回字符串则更新 alt 属性，不返回则使用默认值。
+
+**回调参数：**
+- `data`：当前图片对象
+- `index`：当前图片索引
+- `url`：加载失败的图片 URL
+- `img`：对应的图片 DOM 元素
+
+**使用示例：**
+
+```javascript
+const viewer = new ImagesViewer({
+  images: [
+    { url: 'https://example.com/image1.jpg', title: '图片1' },
+    { url: 'https://example.com/image2.jpg', title: '图片2' }
+  ],
+  onImageError: (data) => {
+    // 自定义 DOM 操作
+    data.img.alt = '图片加载失败';
+  }
+});
+```
+
+### `onThumbnailError`
+
+**类型：** `(data: ErrorCallbackParams) => void`
+
+缩略图加载失败时的回调函数。
+
+**回调参数：**
+- `data`：当前图片对象
+- `index`：当前图片索引
+- `url`：加载失败的缩略图 URL
+- `img`：对应的缩略图 DOM 元素
+
+**使用示例：**
+
+```javascript
+const viewer = new ImagesViewer({
+  images: [
+    { url: 'https://example.com/image1.jpg', title: '图片1' },
+    { url: 'https://example.com/image2.jpg', title: '图片2' }
+  ],
+  onThumbnailError: (data) => {
+    // 自定义 DOM 操作
+    data.img.alt = '缩略图加载失败';
+  }
+});
+```
+
 ### `initialIndex`
 
 **类型：** `number`
@@ -267,27 +335,27 @@ const viewer = new ImagesViewer({
   theme: {
     // 背景
     viewerBgColor: 'rgba(0, 0, 0, 0.9)',
-    
+
     // 工具栏
     toolbarBgColor: 'rgba(30, 30, 30, 0.8)',
     toolbarBorderRadius: '8px',
     toolbarPadding: '10px 15px',
     toolbarBottom: '20px',
-    
+
     // 按钮
     buttonBgColor: 'rgba(50, 50, 50, 0.7)',
     buttonHoverBg: 'rgba(80, 80, 80, 0.7)',
     buttonSize: '45px',
     buttonFontSize: '20px',
     buttonBorderRadius: '50%',
-    
+
     // 缩略图
     thumbItemWidth: '80px',
     thumbItemHeight: '50px',
     thumbGap: '10px',
     thumbPadding: '15px',
     thumbMaxWidth: '70%',
-    
+
     // 通用
     activeColor: 'rgba(100, 150, 255, 0.8)',
     textColor: 'rgba(255, 255, 255, 0.9)',
@@ -301,7 +369,7 @@ const viewer = new ImagesViewer({
 
 ### `onShow`
 
-**类型：** `(container: HTMLElement) => void`
+**类型：** `(container: HTMLDivElement) => void`
 
 查看器显示时触发。
 
@@ -322,9 +390,28 @@ const viewer = new ImagesViewer({
 
 ### `onChange`
 
-**类型：** `(currentIndex: number, direction: 'prev' | 'next') => void`
+**类型：** `(data: ChangeEventData) => void`
 
 图片切换时触发。
+
+**回调参数：**
+- `index`：当前图片索引
+- `oldIndex`：旧的图片索引
+- `direction`：切换方向（'next' | 'prev'）
+- `data`：当前图片数据
+- `img`：当前图片 DOM 元素
+- `dom`：查看器容器 DOM 元素
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg', 'image2.jpg'],
+  onChange: function(data) {
+    console.log('切换到图片:', data.index);
+    console.log('从图片:', data.oldIndex);
+    console.log('切换方向:', data.direction);
+  }
+});
+```
 
 ### `onRotate`
 
@@ -332,17 +419,44 @@ const viewer = new ImagesViewer({
 
 图片旋转时触发。
 
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  onRotate: function(data) {
+    console.log('图片旋转:', data.rotation);
+  }
+});
+```
+
 ### `onDrag`
 
 **类型：** `(data: DragEventData) => void`
 
 图片拖动时触发。
 
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  onDrag: function(data) {
+    console.log('图片拖动:', data.translateX, data.translateY);
+  }
+});
+```
+
 ### `onZoom`
 
 **类型：** `(data: ZoomEventData) => void`
 
 图片缩放时触发。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: ['image1.jpg'],
+  onZoom: function(data) {
+    console.log('图片缩放:', data.scale);
+  }
+});
+```
 
 ## 自定义函数
 
@@ -410,7 +524,15 @@ const viewer = new ImagesViewer({
   maxCacheSize: 30,
   minScale: 0.1,
   maxScale: 5,
-  
+  retryOnError: false,
+
+  // 属性映射
+  props: {
+    url: 'url',
+    title: 'title',
+    thumbnail: 'thumbnail'
+  },
+
   // 按钮
   buttons: {
     zoomIn: true,
@@ -428,20 +550,20 @@ const viewer = new ImagesViewer({
     info: true,
     originalSize: true
   },
-  
+
   // 自定义按钮
   customButtons: [
     ['🔍', () => console.log('搜索')],
     ['📌', () => console.log('固定')]
   ],
-  
+
   // 图片信息
   imageInfo: {
     visible: false,
     showName: true,
     showDimensions: true
   },
-  
+
   // 国际化
   i18n: {
     info: {
@@ -464,7 +586,7 @@ const viewer = new ImagesViewer({
       loading: '加载中...'
     }
   },
-  
+
   // 主题
   theme: {
     viewerBgColor: 'rgba(0, 0, 0, 0.9)',
@@ -472,7 +594,7 @@ const viewer = new ImagesViewer({
     buttonBgColor: 'rgba(50, 50, 50, 0.7)',
     textColor: 'rgba(255, 255, 255, 0.9)'
   },
-  
+
   // 事件回调
   onShow: function(container) {
     console.log('查看器显示');
@@ -480,21 +602,25 @@ const viewer = new ImagesViewer({
   onClose: function() {
     console.log('查看器关闭');
   },
-  onChange: function(index, direction) {
-    console.log('图片改变:', index, direction);
+  onChange: function(data) {
+    console.log('图片切换:', data.index, data.direction);
   },
-  
-  // 事件监听
   onRotate: function(data) {
-    console.log('图片旋转:', data);
+    console.log('图片旋转:', data.rotation);
   },
   onDrag: function(data) {
-    console.log('图片拖动:', data);
+    console.log('图片拖动:', data.translateX, data.translateY);
   },
   onZoom: function(data) {
-    console.log('图片缩放:', data);
+    console.log('图片缩放:', data.scale);
   },
-  
+  onImageError: function(data) {
+    console.log('图片加载失败:', data.url);
+  },
+  onThumbnailError: function(data) {
+    console.log('缩略图加载失败:', data.url);
+  },
+
   // 自定义函数
   onInfo: function(data) {
     return `

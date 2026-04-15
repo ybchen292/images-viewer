@@ -263,8 +263,8 @@ const viewer = new ImagesViewer({
     console.log('Viewer closed');
     // Clean up resources
   },
-  onChange: function(index, direction) {
-    console.log(`Changed to image ${index} (${direction})`);
+  onChange: function(data) {
+    console.log(`Changed to image ${data.index}`);
     // Track image views
   }
 });

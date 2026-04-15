@@ -48,9 +48,6 @@ const viewer4 = new ImagesViewer({
     {
       url: 'https://example.com/image1.jpg',
       title: '风景图片',
-      // title: (currentImage, index) => {
-      //          return `图片${index + 1}`;
-      // },
       thumbnail: 'https://example.com/thumb1.jpg',
     },
     {
@@ -172,6 +169,9 @@ const viewer = new ImagesViewer({
   // 最大缓存数量
   maxCacheSize: 30,
 
+  // 是否在失败后重新请求
+  retryOnError: false,
+
   // 按钮配置
   buttons: {
     zoomIn: true, // 放大
@@ -190,7 +190,7 @@ const viewer = new ImagesViewer({
     originalSize: true, // 原始尺寸
   },
 
-   // 自定义按钮
+  // 自定义按钮
   customButtons: [
     ['🔍', function() { console.log('自定义按钮点击'); }]
   ],
@@ -207,30 +207,37 @@ const viewer = new ImagesViewer({
 
   // 事件回调
   onShow: function(container) {
-    console.log('查看器显示');
+    console.log('查看器显示:', container);
   },
 
   onClose: function() {
     console.log('查看器关闭');
   },
 
-  onChange: function(currentIndex, direction) {
-    console.log('图片切换:', currentIndex, direction);
+  onChange: function(data) {
+    console.log('图片切换到:', data.index);
+    console.log('从图片:', data.oldIndex);
+    console.log('切换方向:', data.direction);
   },
 
-  // 旋转事件
   onRotate: function(data) {
-    console.log('图片旋转:', data);
+    console.log('图片旋转:', data.rotation);
   },
 
-  // 拖动事件
   onDrag: function(data) {
-    console.log('图片拖动:', data);
+    console.log('图片拖动:', data.translateX, data.translateY);
   },
 
-  // 缩放事件
   onZoom: function(data) {
-    console.log('图片缩放:', data);
+    console.log('图片缩放:', data.scale);
+  },
+
+  onImageError: function(data) {
+    console.log('图片加载失败:', data.url);
+  },
+
+  onThumbnailError: function(data) {
+    console.log('缩略图加载失败:', data.url);
   },
 
   // 信息栏自定义函数
@@ -497,13 +504,12 @@ const viewer = new ImagesViewer({
       },
     ],
   ],
-  onChange: (index, direction) => {
-    // direction: 'prev' | 'next'
-    console.log(index, direction);
+  onChange: (data) => {
+    console.log('图片切换:', data.index, data.direction);
   },
-  onShow: dom => {
+  onShow: (container) => {
     // 自定义按钮
-    const toolbar = dom.querySelector('.images-viewer-toolbar');
+    const toolbar = container.querySelector('.images-viewer-toolbar');
     const button = document.createElement('button');
     button.className = 'images-viewer-tool-btn';
 
@@ -513,10 +519,8 @@ const viewer = new ImagesViewer({
 
     button.addEventListener('click', e => {
       console.log('test');
-      // e.stopPropagation();
     });
     toolbar.appendChild(button);
-    console.log('onShow', dom);
   },
   onClose: () => {
     console.log('close');
