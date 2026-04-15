@@ -20,13 +20,10 @@
         const viewer = new ImagesViewer({
           initialIndex: 0,
           onImageError: data => {
-            // data.img.src = 'https://picsum.photos/id/237/800/600';
-            console.log('🚀 ~ onImageError', data);
+            data.img.src = 'https://picsum.photos/id/237/800/600';
           },
           onThumbnailError: data => {
-            // data.img.style.display = 'none';
-            // data.img.src = 'https://picsum.photos/id/237/800/600';
-            console.log('🚀 ~ onThumbnailError', data);
+            data.img.src = 'https://picsum.photos/id/237/800/600';
           },
           images: [
             {

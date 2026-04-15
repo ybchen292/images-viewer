@@ -113,7 +113,7 @@ const viewer = new ImagesViewer({
 
 **Type:** `(data: ErrorCallbackParams) => void`
 
-Callback function when image load fails. Returns a string to update alt attribute, otherwise uses default value.
+Custom callback function when image load fails.
 
 **Callback parameters:**
 - `data`: Current image object
@@ -140,7 +140,7 @@ const viewer = new ImagesViewer({
 
 **Type:** `(data: ErrorCallbackParams) => void`
 
-Callback function when thumbnail load fails. Returns a string to update alt attribute, otherwise uses default value.
+Custom callback function when thumbnail load fails.
 
 **Callback parameters:**
 - `data`: Current image object

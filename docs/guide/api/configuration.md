@@ -113,7 +113,7 @@ const viewer = new ImagesViewer({
 
 **类型：** `(data: ErrorCallbackParams) => void`
 
-图片加载失败时的回调函数。返回字符串则更新 alt 属性，不返回则使用默认值。
+图片加载失败时的自定义函数
 
 **回调参数：**
 - `data`：当前图片对象
@@ -140,7 +140,7 @@ const viewer = new ImagesViewer({
 
 **类型：** `(data: ErrorCallbackParams) => void`
 
-缩略图加载失败时的回调函数。
+缩略图加载失败时的自定义函数
 
 **回调参数：**
 - `data`：当前图片对象
