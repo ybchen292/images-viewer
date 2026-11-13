@@ -1,3 +1,60 @@
+// LRU Cache implementation
+class LRUCache {
+  constructor(maxSize) {
+    this.maxSize = maxSize;
+    this.cache = new Map();
+  }
+
+  get(key) {
+    if (!this.cache.has(key)) return null;
+    const value = this.cache.get(key);
+    // Move to end (most recently used)
+    this.cache.delete(key);
+    this.cache.set(key, value);
+    return value;
+  }
+
+  set(key, value) {
+    if (this.cache.has(key)) {
+      this.cache.delete(key);
+    }
+    this.cache.set(key, value);
+    // Evict least recently used if over capacity
+    if (this.cache.size > this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+    }
+  }
+
+  has(key) {
+    return this.cache.has(key);
+  }
+
+  delete(key) {
+    this.cache.delete(key);
+  }
+
+  clear() {
+    this.cache.clear();
+  }
+
+  get size() {
+    return this.cache.size;
+  }
+
+  keys() {
+    return this.cache.keys();
+  }
+
+  values() {
+    return this.cache.values();
+  }
+
+  entries() {
+    return this.cache.entries();
+  }
+}
+
 class ImagesViewer {
   constructor(options) {
     // 默认配置
@@ -165,9 +222,19 @@ class ImagesViewer {
     this.loadedImages = new Map();
     this.loadingImages = new Map();
     this.failedImages = new Set(); // 失败图片缓存
-    this.loadedThumbnails = new Map();
     this.loadingThumbnails = new Map();
     this.failedThumbnails = new Set(); // 失败缩略图缓存
+
+    // 虚拟列表状态
+    this.thumbnailCache = new LRUCache(this.options.maxCacheSize); // LRU 缓存
+    this.renderedThumbnails = new Map(); // 已渲染的缩略图索引 -> DOM元素
+    this.virtualListStartIndex = 0; // 虚拟列表起始索引
+    this.virtualListEndIndex = 0; // 虚拟列表结束索引
+    this.isInitialScrollSetup = false; // 初始滚动位置是否已设置
+    this.thumbnailItemWidth = parseInt(this.options.theme.thumbItemWidth);
+    this.thumbnailItemHeight = parseInt(this.options.theme.thumbItemHeight);
+    this.thumbnailGap = parseInt(this.options.theme.thumbGap);
+    this.thumbnailPadding = parseInt(this.options.theme.thumbPadding);
 
     // 双击相关状态
     this.lastTapTime = 0;
@@ -632,9 +699,8 @@ class ImagesViewer {
           padding: 10px var(--thumb-padding);
           background-color: var(--toolbar-bg-color);
           border-radius: 12px;
-          display: flex;
-          gap: var(--thumb-gap);
           overflow-x: auto;
+          overflow-y: hidden;
           scrollbar-width: none;
           -ms-overflow-style: none;
           z-index: 10;
@@ -647,6 +713,12 @@ class ImagesViewer {
           display: none;
         }
 
+        /* 虚拟滚动容器 */
+        .images-viewer-thumbnails-scroll {
+          position: relative;
+          height: 100%;
+        }
+
         .images-viewer-thumbnail-item {
           width: var(--thumb-item-width);
           height: var(--thumb-item-height);
@@ -654,10 +726,8 @@ class ImagesViewer {
           border-radius: 6px;
           overflow: hidden;
           cursor: pointer;
-          flex-shrink: 0;
           transition: all 0.2s;
           z-index: 11;
-          position: relative;
           opacity: 0.6;
         }
 
@@ -945,6 +1015,20 @@ class ImagesViewer {
     const thumbContainer = document.createElement('div');
     thumbContainer.className = 'images-viewer-thumbnails-container';
 
+    // 计算总宽度用于虚拟滚动
+    const totalWidth = this.images.length * (this.thumbnailItemWidth + this.thumbnailGap) - this.thumbnailGap;
+    thumbContainer.style.height = `${this.thumbnailItemHeight || parseInt(this.options.theme.thumbItemHeight)}px`;
+
+    // 创建内部滚动容器
+    const scrollContainer = document.createElement('div');
+    scrollContainer.className = 'images-viewer-thumbnails-scroll';
+    scrollContainer.style.width = `${totalWidth}px`;
+    scrollContainer.style.height = '100%';
+    scrollContainer.style.position = 'relative';
+    thumbContainer.appendChild(scrollContainer);
+
+    this.thumbnailScrollContainer = scrollContainer;
+
     // 委托事件处理缩略图点击
     this.addEvent(thumbContainer, 'click', e => {
       e.stopPropagation();
@@ -957,6 +1041,10 @@ class ImagesViewer {
           this.currentIndex = clickedIndex;
           this.loadCurrentImage();
           this.updateThumbnails();
+
+          // 检查是否需要自动滚动加载
+          this.checkAndAutoLoadThumbnails(clickedIndex);
+
           // 触发 onchange 事件
           if (this.options.onChange) {
             this.options.onChange({
@@ -974,84 +1062,200 @@ class ImagesViewer {
 
     // 允许滚轮滚动
     this.addEvent(thumbContainer, 'wheel', e => {
-      e.preventDefault(); // 阻止默认垂直滚动
-      e.stopPropagation(); // 阻止事件冒泡到imageContainer
-
-      // 实现水平滚动
+      e.preventDefault();
+      e.stopPropagation();
       thumbContainer.scrollLeft += e.deltaY;
     });
 
-    // 动态计算可视区域可放下的缩略图数量
-    const thumbItemWidth = parseInt(this.options.theme.thumbItemWidth);
-    const thumbGap = parseInt(this.options.theme.thumbGap);
-    const thumbPadding = parseInt(this.options.theme.thumbPadding);
-    const preloadCount = this.options.preloadCount;
-
-    const viewportWidth = window.innerWidth;
-    const availableWidth = viewportWidth - thumbPadding * 2;
-    const visibleCount = Math.ceil(availableWidth / (thumbItemWidth + thumbGap));
-    const initialCount = Math.min(visibleCount + preloadCount, this.images.length);
-
-    for (let i = 0; i < initialCount; i++) {
-      this.createThumbnailItem(thumbContainer, i);
-    }
-
-    // 滚动时懒加载更多缩略图
-    let loadedCount = initialCount;
+    // 滚动时动态渲染可见缩略图（跳过初始跳转）
     this.addEvent(thumbContainer, 'scroll', () => {
-      const scrollLeft = thumbContainer.scrollLeft;
-      const containerWidth = thumbContainer.clientWidth;
-      const maxScroll = thumbContainer.scrollWidth - containerWidth;
-
-      // 当滚动到接近末尾时，加载更多缩略图
-      if (scrollLeft > maxScroll - containerWidth && loadedCount < this.images.length) {
-        const loadMore = Math.min(visibleCount, this.images.length - loadedCount);
-        for (let i = loadedCount; i < loadedCount + loadMore; i++) {
-          this.createThumbnailItem(thumbContainer, i);
-        }
-        loadedCount += loadMore;
+      if (this.isInitialScrollSetup) {
+        this.renderVisibleThumbnails();
       }
     });
 
     this.container.appendChild(thumbContainer);
     this.thumbContainer = thumbContainer;
+
+    // 延迟初始渲染，确保容器已完成布局计算
+    requestAnimationFrame(() => {
+      const { start, end } = this.getInitialThumbnailRange();
+
+      // 直接跳转到对应位置，不触发滚动事件
+      const itemWidth = this.thumbnailItemWidth + this.thumbnailGap;
+      const targetScrollLeft = start * itemWidth;
+      this.thumbContainer.scrollLeft = targetScrollLeft;
+
+      // 渲染初始缩略图
+      for (let i = start; i <= end; i++) {
+        this.createVirtualThumbnailItem(i);
+      }
+      this.virtualListStartIndex = start;
+      this.virtualListEndIndex = end;
+
+      // 标记初始滚动已设置，后续滚动事件将正常处理
+      this.isInitialScrollSetup = true;
+    });
   }
 
-  createThumbnailItem(container, index) {
+  // 计算可见区域的索引范围
+  getVisibleThumbnailRange() {
+    if (!this.thumbContainer) return { start: 0, end: 0 };
+
+    const scrollLeft = this.thumbContainer.scrollLeft;
+    const containerWidth = this.thumbContainer.clientWidth;
+
+    const start = Math.max(0, Math.floor(scrollLeft / (this.thumbnailItemWidth + this.thumbnailGap)) - 2);
+    const end = Math.min(
+      this.images.length - 1,
+      Math.ceil((scrollLeft + containerWidth) / (this.thumbnailItemWidth + this.thumbnailGap)) + 2,
+    );
+
+    return { start, end };
+  }
+
+  // 计算初始渲染范围（可视区域能容纳的最大数量 + preloadCount 预加载）
+  getInitialThumbnailRange() {
+    const containerWidth = this.thumbContainer.clientWidth;
+    const itemWidth = this.thumbnailItemWidth + this.thumbnailGap;
+    const visibleCount = Math.ceil(containerWidth / itemWidth);
+    const preloadRange = this.options.preloadCount;
+    const totalCount = visibleCount + preloadRange; // 总需要渲染的数量
+
+    let start = Math.max(0, this.currentIndex);
+    let end = Math.min(this.images.length - 1, this.currentIndex + totalCount);
+
+    // 如果范围不足 visibleCount，需要扩展
+    const currentCount = end - start + 1;
+    if (currentCount < visibleCount) {
+      // 如果 end 已经是最后一张，start 往前扩展
+      if (end === this.images.length - 1) {
+        start = Math.max(0, end - visibleCount + 1);
+      } else {
+        // end 不是最后一张，end 往后扩展
+        end = Math.min(this.images.length - 1, start + visibleCount - 1);
+      }
+    }
+
+    return { start, end };
+  }
+
+  // 渲染可见的缩略图
+  renderVisibleThumbnails() {
+    if (!this.thumbContainer || !this.thumbnailScrollContainer) return;
+
+    const { start, end } = this.getVisibleThumbnailRange();
+
+    // 移除不在可见区域的缩略图
+    for (const [index, element] of this.renderedThumbnails.entries()) {
+      if (index < start || index > end) {
+        element.remove();
+        this.renderedThumbnails.delete(index);
+      }
+    }
+
+    // 渲染新的可见缩略图
+    for (let i = start; i <= end; i++) {
+      if (!this.renderedThumbnails.has(i)) {
+        this.createVirtualThumbnailItem(i);
+      }
+    }
+
+    this.virtualListStartIndex = start;
+    this.virtualListEndIndex = end;
+  }
+
+  // 检查并自动滚动加载缩略图（点击靠近边缘的缩略图时触发）
+  checkAndAutoLoadThumbnails(clickedIndex) {
+    if (!this.thumbContainer || !this.thumbnailScrollContainer) return;
+
+    const itemWidth = this.thumbnailItemWidth + this.thumbnailGap;
+    const scrollLeft = this.thumbContainer.scrollLeft;
+    const containerWidth = this.thumbContainer.clientWidth;
+
+    // 计算当前可视区域的索引范围
+    const visibleStart = Math.floor(scrollLeft / itemWidth);
+    const visibleEnd = Math.ceil((scrollLeft + containerWidth) / itemWidth) - 1;
+
+    // 如果点击的缩略图在可视区域前3张内，自动向前滚动加载
+    if (clickedIndex <= visibleStart + 3 && clickedIndex > 0) {
+      const targetScrollLeft = Math.max(0, (clickedIndex - 3) * itemWidth);
+      this.thumbContainer.scrollTo({
+        left: targetScrollLeft,
+        behavior: 'smooth',
+      });
+    }
+
+    // 如果点击的缩略图在可视区域后3张内，自动向后滚动加载
+    if (clickedIndex >= visibleEnd - 3 && clickedIndex < this.images.length - 1) {
+      const targetScrollLeft = (clickedIndex - 3) * itemWidth;
+      this.thumbContainer.scrollTo({
+        left: Math.min(targetScrollLeft, this.thumbnailScrollContainer.scrollWidth - containerWidth),
+        behavior: 'smooth',
+      });
+    }
+  }
+
+  // 初始渲染缩略图（预加载 preloadCount 张）
+  renderInitialThumbnails() {
+    if (!this.thumbContainer || !this.thumbnailScrollContainer) return;
+
+    const { start, end } = this.getInitialThumbnailRange();
+
+    // 渲染初始可见缩略图
+    for (let i = start; i <= end; i++) {
+      this.createVirtualThumbnailItem(i);
+    }
+
+    this.virtualListStartIndex = start;
+    this.virtualListEndIndex = end;
+  }
+
+  // 创建虚拟缩略图项
+  createVirtualThumbnailItem(index) {
     const thumbnailUrl = this.getThumbnailUrl(index);
     const imageUrl = this.getImageUrl(index);
     const thumbItem = document.createElement('div');
     thumbItem.className = `images-viewer-thumbnail-item ${index === this.currentIndex ? 'active' : ''}`;
     thumbItem.dataset.index = index;
 
+    // 设置绝对定位
+    const left = index * (this.thumbnailItemWidth + this.thumbnailGap);
+    thumbItem.style.position = 'absolute';
+    thumbItem.style.left = `${left}px`;
+    thumbItem.style.top = '0';
+
     const thumbImg = new Image();
     thumbImg.crossOrigin = 'anonymous';
     thumbImg.src = '';
+
     // 加载状态容器
     const loadingContainer = document.createElement('div');
     loadingContainer.className = 'images-viewer-thumbnail-loading';
     loadingContainer.innerHTML = '<div class="loading-spinner"></div>';
     thumbItem.appendChild(loadingContainer);
 
-    // 优先使用缩略图缓存
-    if (this.loadedThumbnails.has(thumbnailUrl)) {
-      thumbImg.src = this.loadedThumbnails.get(thumbnailUrl).src;
+    // 优先使用 LRU 缓存
+    const cachedThumb = this.thumbnailCache.get(thumbnailUrl);
+    if (cachedThumb) {
+      thumbImg.src = cachedThumb.src;
       loadingContainer.remove();
     } else if (this.loadingThumbnails.has(thumbnailUrl)) {
       // 缩略图正在加载中，等待加载完成
       loadingContainer.style.display = 'flex';
+      const originalOnload = thumbImg.onload;
       thumbImg.onload = () => {
         loadingContainer.remove();
         thumbImg.onload = null;
         thumbImg.onerror = null;
+        if (originalOnload) originalOnload();
       };
       thumbImg.onerror = () => {
         loadingContainer.remove();
-        this.failedThumbnails.add(thumbnailUrl); // 添加到失败集合
+        this.failedThumbnails.add(thumbnailUrl);
         thumbImg.onload = null;
         thumbImg.onerror = null;
 
-        // 调用缩略图加载失败回调
         if (this.options.onThumbnailError) {
           this.options.onThumbnailError({
             data: this.images[index],
@@ -1059,8 +1263,6 @@ class ImagesViewer {
             url: thumbnailUrl,
             img: thumbImg,
           });
-        } else {
-          console.error(`Thumbnail load failed: ${thumbnailUrl}`);
         }
       };
       thumbImg.src = thumbnailUrl;
@@ -1076,9 +1278,10 @@ class ImagesViewer {
       this.loadingThumbnails.set(thumbnailUrl, thumbImg);
       loadingContainer.style.display = 'flex';
       thumbImg.onload = () => {
-        this.loadedThumbnails.set(thumbnailUrl, thumbImg);
+        // 存入 LRU 缓存
+        this.thumbnailCache.set(thumbnailUrl, thumbImg);
         this.loadingThumbnails.delete(thumbnailUrl);
-        this.failedThumbnails.delete(thumbnailUrl); // 加载成功，从失败集合中移除
+        this.failedThumbnails.delete(thumbnailUrl);
         loadingContainer.remove();
         thumbImg.onload = null;
         thumbImg.onerror = null;
@@ -1090,7 +1293,6 @@ class ImagesViewer {
         thumbImg.onload = null;
         thumbImg.onerror = null;
 
-        // 调用缩略图加载失败回调
         if (this.options.onThumbnailError) {
           this.options.onThumbnailError({
             data: this.images[index],
@@ -1098,35 +1300,30 @@ class ImagesViewer {
             url: thumbnailUrl,
             img: thumbImg,
           });
-        } else {
-          console.error(`Thumbnail load failed: ${thumbnailUrl}`);
         }
       };
       thumbImg.src = thumbnailUrl;
     }
 
     thumbItem.appendChild(thumbImg);
-
-    // 移除单独的点击事件，使用委托事件
-
-    container.appendChild(thumbItem);
+    this.thumbnailScrollContainer.appendChild(thumbItem);
+    this.renderedThumbnails.set(index, thumbItem);
   }
 
   updateThumbnailDisplay(index) {
     if (!this.thumbContainer) return;
 
-    const thumbnailItem = this.thumbContainer.querySelector(`[data-index="${index}"]`);
+    // 只更新已渲染的缩略图
+    const thumbnailItem = this.renderedThumbnails.get(index);
     if (thumbnailItem) {
       const thumbnailUrl = this.getThumbnailUrl(index);
       const thumbImg = thumbnailItem.querySelector('img');
 
-      if (thumbImg && this.loadedThumbnails.has(thumbnailUrl)) {
-        // 显示正常缩略图
-        const cachedThumb = this.loadedThumbnails.get(thumbnailUrl);
+      if (thumbImg && this.thumbnailCache.has(thumbnailUrl)) {
+        const cachedThumb = this.thumbnailCache.get(thumbnailUrl);
         thumbImg.src = cachedThumb.src;
         thumbImg.style.display = 'block';
 
-        // 移除加载状态
         const loadingContainer = thumbnailItem.querySelector('.images-viewer-thumbnail-loading');
         if (loadingContainer) {
           loadingContainer.remove();
@@ -1331,7 +1528,7 @@ class ImagesViewer {
     }
   }
 
-  loadCurrentImage(index) {
+  loadCurrentImage(index, roll = true) {
     if (index !== undefined) {
       this.currentIndex = index;
     }
@@ -1374,7 +1571,7 @@ class ImagesViewer {
     // 更新导航按钮状态
     this.updateNavButtons();
     // 更新缩略图状态
-    this.updateThumbnails();
+    this.updateThumbnails(roll);
 
     // 重置变换状态
     this.scale = 1.0;
@@ -1414,7 +1611,7 @@ class ImagesViewer {
     const thumbnailUrl = this.getThumbnailUrl(index);
     if (
       !thumbnailUrl ||
-      this.loadedThumbnails.has(thumbnailUrl) ||
+      this.thumbnailCache.has(thumbnailUrl) ||
       this.loadingThumbnails.has(thumbnailUrl) ||
       (!this.options.retryOnError && this.failedThumbnails.has(thumbnailUrl))
     )
@@ -1423,9 +1620,9 @@ class ImagesViewer {
     const img = new Image();
 
     img.onload = () => {
-      this.loadedThumbnails.set(thumbnailUrl, img);
+      this.thumbnailCache.set(thumbnailUrl, img);
       this.loadingThumbnails.delete(thumbnailUrl);
-      this.failedThumbnails.delete(thumbnailUrl); // 加载成功，从失败集合中移除
+      this.failedThumbnails.delete(thumbnailUrl);
       // 更新对应的缩略图显示
       this.updateThumbnailDisplay(index);
       img.onload = null;
@@ -1434,14 +1631,14 @@ class ImagesViewer {
 
     img.onerror = () => {
       this.loadingThumbnails.delete(thumbnailUrl);
-      this.failedThumbnails.add(thumbnailUrl); // 添加到失败集合
+      this.failedThumbnails.add(thumbnailUrl);
       img.onload = null;
       img.onerror = null;
 
       // 找到对应的缩略图元素
       let thumbImg = null;
       if (this.thumbContainer) {
-        const thumbnailItem = this.thumbContainer.querySelector(`[data-index="${index}"]`);
+        const thumbnailItem = this.renderedThumbnails.get(index);
         if (thumbnailItem) {
           thumbImg = thumbnailItem.querySelector('img');
           // 移除加载状态
@@ -1523,7 +1720,7 @@ class ImagesViewer {
       return;
     }
 
-    // 如果图片加载失败且不重试，直接显示失败状态
+    // 如果图片加载失败且重试，直接显示失败状态
     if (isFailed && !this.options.retryOnError) {
       this.hideLoading();
       this.image.classList.add('loaded');
@@ -1703,17 +1900,34 @@ class ImagesViewer {
     if (this.toolbarNextBtn) this.toolbarNextBtn.disabled = !canGoNext;
   }
 
-  updateThumbnails() {
+  updateThumbnails(roll = true) {
     if (this.images.length <= 1) return;
 
-    document.querySelectorAll('.images-viewer-thumbnail-item').forEach(item => {
-      item.classList.remove('active');
-    });
+    // 更新所有已渲染的缩略图状态
+    for (const [index, item] of this.renderedThumbnails.entries()) {
+      if (index === this.currentIndex) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    }
 
-    const activeItem = document.querySelector(`.images-viewer-thumbnail-item[data-index="${this.currentIndex}"]`);
-    if (activeItem) {
-      activeItem.classList.add('active');
-      activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    // 确保当前缩略图在可见范围内
+    if (this.thumbContainer) {
+      const currentIndex = this.currentIndex;
+      const itemLeft = currentIndex * (this.thumbnailItemWidth + this.thumbnailGap);
+      const itemRight = itemLeft + this.thumbnailItemWidth;
+      const scrollLeft = this.thumbContainer.scrollLeft;
+      const containerWidth = this.thumbContainer.clientWidth;
+
+      // 如果当前缩略图不在可视区域内，滚动到可视区域
+      if (itemLeft < scrollLeft || itemRight > scrollLeft + containerWidth) {
+        const targetScrollLeft = itemLeft - (containerWidth - this.thumbnailItemWidth) / 2;
+        this.thumbContainer.scrollTo({
+          left: Math.max(0, targetScrollLeft),
+          behavior: roll ? 'smooth' : 'auto',
+        });
+      }
     }
   }
 
@@ -1860,7 +2074,7 @@ class ImagesViewer {
       // 触发拖动事件
       if (this.options.onDrag) {
         this.options.onDrag({
-          data: his.images[this.currentIndex],
+          data: this.images[this.currentIndex],
           index: this.currentIndex,
           translateX: this.translateX,
           translateY: this.translateY,
@@ -2387,30 +2601,8 @@ class ImagesViewer {
   updateThumbnailsOnResize() {
     if (!this.thumbContainer) return;
 
-    // 动态计算可视区域可放下的缩略图数量
-    const thumbItemWidth = parseInt(this.options.theme.thumbItemWidth);
-    const thumbGap = parseInt(this.options.theme.thumbGap);
-    const thumbPadding = parseInt(this.options.theme.thumbPadding);
-    const preloadCount = this.options.preloadCount;
-
-    const viewportWidth = window.innerWidth;
-    const availableWidth = viewportWidth - thumbPadding * 2;
-    const visibleCount = Math.ceil(availableWidth / (thumbItemWidth + thumbGap));
-    const initialCount = Math.min(visibleCount + preloadCount, this.images.length);
-
-    // 检查当前已加载的缩略图数量
-    const existingItems = this.thumbContainer.querySelectorAll('.images-viewer-thumbnail-item');
-    const loadedCount = existingItems.length;
-
-    // 如果需要加载更多缩略图
-    if (loadedCount < initialCount) {
-      const loadMore = initialCount - loadedCount;
-      for (let i = loadedCount; i < loadedCount + loadMore; i++) {
-        if (i < this.images.length) {
-          this.createThumbnailItem(this.thumbContainer, i);
-        }
-      }
-    }
+    // 虚拟列表自动处理，只需重新渲染可见区域
+    this.renderVisibleThumbnails();
   }
 
   onShow() {
@@ -2447,6 +2639,10 @@ class ImagesViewer {
     this.loadedImages.clear();
     this.loadingImages.clear();
     this.imageMetadata = [];
+
+    // 清理缩略图 LRU 缓存和渲染状态
+    this.thumbnailCache.clear();
+    this.renderedThumbnails.clear();
 
     // 清理 Blob URL
     if (this._currentBlobUrl) {

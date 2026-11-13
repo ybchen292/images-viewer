@@ -11,6 +11,7 @@
     <button id="openViewer">单图预览</button>
     <button id="openViewer2">自定义按钮和触发事件</button>
     <button id="openViewer3">自定义缩略图</button>
+    <button id="openViewer4">本地测试多图片虚拟列表</button>
     <script type="module">
       import ImagesViewer from './index.js';
       document.getElementById('openViewer').addEventListener('click', function () {
@@ -18,7 +19,7 @@
       });
       document.getElementById('openViewer2').addEventListener('click', function () {
         const viewer = new ImagesViewer({
-          initialIndex: 0,
+          initialIndex: 5,
           onImageError: data => {
             data.img.src = 'https://picsum.photos/id/237/800/600';
           },
@@ -39,19 +40,6 @@
             '123123',
             '333',
             'https://picsum.photos/id/23/200/300',
-            // 'https://picsum.photos/id/24/200/300',
-            // 'https://picsum.photos/id/25/200/300',
-            // 'https://picsum.photos/id/26/200/300',
-            // 'https://picsum.photos/id/27/200/300',
-            // 'https://picsum.photos/id/28/200/300',
-            // 'https://picsum.photos/id/29/200/300',
-            // 'https://picsum.photos/id/30/200/800',
-            // 'https://picsum.photos/id/31/200/300',
-            // 'https://picsum.photos/id/32/200/300',
-            // 'https://picsum.photos/id/33/200/300',
-            // 'https://picsum.photos/id/34/200/300',
-            // 'https://picsum.photos/id/35/200/300',
-            // 'https://picsum.photos/id/1005/1600/900',
           ],
           minScale: 0.3,
           maxScale: 3,
@@ -150,6 +138,45 @@
           //   },
           //   thumbnail: 'thumbnail2',
           // },
+        });
+      });
+
+      document.getElementById('openViewer4').addEventListener('click', function () {
+        const images = [];
+        for (let i = 0; i < 61; i++) {
+          images.push({
+            url: `/demo/img/${i}.jpg`,
+            title: `图片${i}`,
+          });
+        }
+
+        const viewer = new ImagesViewer({
+          initialIndex: 0,
+          images: images,
+          minScale: 0.3,
+          maxScale: 3,
+          theme: {
+            thumbMaxWidth: '50%',
+          },
+          customButtons: [
+            [
+              '第一张',
+              () => {
+                viewer.loadCurrentImage(0);
+              },
+            ],
+            [
+              '最后一张',
+              () => {
+                viewer.loadCurrentImage(60, false);
+              },
+            ],
+          ],
+          onChange: data => {},
+          onShow: dom => {
+            // 自定义按钮
+          },
+          onClose: () => {},
         });
       });
     </script>

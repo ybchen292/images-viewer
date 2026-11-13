@@ -1,4 +1,21 @@
 /**
+ * LRU 缓存类
+ * 用于管理缩略图缓存，实现最近最少使用淘汰策略
+ */
+export class LRUCache {
+  constructor(maxSize: number);
+  get(key: string): any | null;
+  set(key: string, value: any): void;
+  has(key: string): boolean;
+  delete(key: string): void;
+  clear(): void;
+  readonly size: number;
+  keys(): IterableIterator<string>;
+  values(): IterableIterator<any>;
+  entries(): IterableIterator<[string, any]>;
+}
+
+/**
  * 图片对象类型
  */
 export interface ImageObject {
@@ -259,6 +276,7 @@ interface ImagesViewerOptions {
 
   /**
    * 最大缓存图片数量
+   * 用于缩略图虚拟列表的 LRU 缓存管理
    * @default 30
    */
   maxCacheSize?: number;
@@ -590,7 +608,7 @@ declare class ImagesViewer {
 }
 
 export default ImagesViewer;
-export { ImagesViewer, ImagesViewerOptions };
+export { ImagesViewer, ImagesViewerOptions, LRUCache };
 // 全局变量声明（用于UMD模块）
 declare global {
   interface Window {

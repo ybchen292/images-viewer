@@ -40,13 +40,17 @@ Triggered when the viewer is closed.
 
 ### `onChange`
 
-**Type:** `(currentIndex: number, direction: 'prev' | 'next') => void`
+**Type:** `(data: ChangeEventData) => void`
 
 Triggered when the image is changed.
 
 **Parameters:**
-- `currentIndex`: The index of the newly displayed image
-- `direction`: The direction of navigation (`'prev'` or `'next'`)
+- `data.index`: The index of the newly displayed image
+- `data.oldIndex`: The index of the previously displayed image
+- `data.direction`: The direction of navigation (`'prev'` or `'next'`)
+- `data.data`: The current image data (string or ImageObject)
+- `data.img`: Reference to the current image element
+- `data.dom`: Reference to the main viewer container element
 
 ### `onRotate`
 
@@ -66,12 +70,41 @@ Triggered when the image is dragged.
 
 Triggered when the image is zoomed.
 
+### `onImageError`
+
+**Type:** `(data: ErrorCallbackParams) => void | string`
+
+Triggered when an image fails to load.
+
+**Parameters:**
+- `data.data`: Current image data
+- `data.index`: Current image index
+- `data.url`: The URL of the failed image
+- `data.img`: The corresponding image DOM element
+
+**Returns:** Returning a string updates the image's alt attribute
+
+### `onThumbnailError`
+
+**Type:** `(data: ErrorCallbackParams) => void | string`
+
+Triggered when a thumbnail fails to load.
+
+**Parameters:**
+- `data.data`: Current image data
+- `data.index`: Current image index
+- `data.url`: The URL of the failed thumbnail
+- `data.img`: The corresponding thumbnail DOM element
+
+**Returns:** Returning a string updates the thumbnail's alt attribute
+
 ## Event Flow
 
 1. **Viewer initialization** - `new ImagesViewer()`
 2. **Viewer shown** - `onShow` triggered
-3. **Image operations** - `onChange`、`onRotate`、`onDrag`、`onZoom` triggered
-4. **Viewer closed** - `onClose` triggered
+3. **Image operations** - `onChange`, `onRotate`, `onDrag`, `onZoom` triggered
+4. **Image load failure** - `onImageError` / `onThumbnailError` triggered
+5. **Viewer closed** - `onClose` triggered
 
 ## Usage Examples
 

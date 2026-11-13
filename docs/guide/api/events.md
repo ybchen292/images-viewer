@@ -70,12 +70,41 @@ const viewer = new ImagesViewer({
 
 图片缩放时触发。
 
+### `onImageError`
+
+**类型：** `(data: ErrorCallbackParams) => void | string`
+
+图片加载失败时触发。
+
+**参数：**
+- `data.data`：当前图片数据
+- `data.index`：当前图片索引
+- `data.url`：加载失败的图片 URL
+- `data.img`：对应的图片 DOM 元素
+
+**返回值：** 返回字符串可更新图片的 alt 属性
+
+### `onThumbnailError`
+
+**类型：** `(data: ErrorCallbackParams) => void | string`
+
+缩略图加载失败时触发。
+
+**参数：**
+- `data.data`：当前图片数据
+- `data.index`：当前图片索引
+- `data.url`：加载失败的缩略图 URL
+- `data.img`：对应的缩略图 DOM 元素
+
+**返回值：** 返回字符串可更新缩略图的 alt 属性
+
 ## 事件流程
 
 1. **查看器初始化** - `new ImagesViewer()`
 2. **查看器显示** - `onShow` 触发
 3. **图片操作** - `onChange`、`onRotate`、`onDrag`、`onZoom` 触发
-4. **查看器关闭** - `onClose` 触发
+4. **图片加载失败** - `onImageError` / `onThumbnailError` 触发
+5. **查看器关闭** - `onClose` 触发
 
 ## 使用示例
 

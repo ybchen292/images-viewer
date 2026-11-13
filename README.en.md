@@ -20,7 +20,7 @@ A feature-rich, responsive image viewer supporting zoom, rotation, navigation, a
 - 🖥️ **Fullscreen Mode** - Fullscreen image viewing
 - 🌍 **Internationalization** - Customizable interface language
 - 📦 **Cache Management** - Intelligent image caching, reducing duplicate requests
-- ⚡ **Performance Optimization** - Lazy loading and preloading strategies
+- ⚡ **Performance Optimization** - Virtual List, Lazy loading and preloading strategies
 - 🏷️ **Image Object Support** - Support for object format image configuration with url, title, thumbnail properties
 - 🔢 **Initial Index** - Specify initial image index to display
 - 📞 **Event Listeners** - Support for rotation, drag, and zoom event listeners

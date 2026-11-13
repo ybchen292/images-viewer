@@ -82,15 +82,21 @@ const viewer = new ImagesViewer({
 
 ## Cache Management
 
-Optimize performance with cache management:
+Optimize thumbnail performance with LRU cache management:
 
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg', 'image3.jpg', 'image4.jpg', 'image5.jpg'],
-  maxCacheSize: 20, // Maximum 20 images in cache
+  maxCacheSize: 20, // Maximum 20 thumbnails in LRU cache
   preloadCount: 5, // Preload 5 adjacent images
 });
 ```
+
+**LRU Cache Strategy:**
+- Thumbnails use LRU (Least Recently Used) cache management
+- When cache exceeds `maxCacheSize`, the least recently used thumbnails are automatically evicted
+- Accessed thumbnails are marked as recently used, extending their retention time
+- Works with virtual list to ensure memory usage stays controllable
 
 ## Custom Buttons
 
@@ -218,6 +224,23 @@ export class ImageViewerComponent {
 
 ## Performance Optimization
 
+### Virtual List
+
+ImagesViewer uses virtual list technology to optimize thumbnail rendering. No matter how many images you have, only thumbnails in the visible area are rendered to the DOM, significantly improving scroll performance.
+
+```javascript
+const viewer = new ImagesViewer({
+  images: largeImageArray, // Smooth scrolling even with thousands of images
+  maxCacheSize: 30, // LRU cache size, controls number of thumbnails kept in memory
+});
+```
+
+**Virtual List Features:**
+- Only renders thumbnails in the visible area, reducing DOM node count
+- Dynamically creates and destroys thumbnail elements during scrolling
+- Uses LRU (Least Recently Used) cache strategy to manage loaded thumbnails
+- Automatically evicts least recently used thumbnails when cache exceeds `maxCacheSize`
+
 ### Lazy Loading
 
 ImagesViewer automatically implements lazy loading for images, but you can optimize further:
@@ -241,7 +264,8 @@ const viewer = new ImagesViewer({
     thumbItemWidth: '60px', // Smaller thumbnails
     thumbItemHeight: '40px',
     thumbMaxWidth: '60%' // Limit thumbnail container width
-  }
+  },
+  maxCacheSize: 20 // Thumbnail LRU cache size
 });
 ```
 

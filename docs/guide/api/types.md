@@ -211,7 +211,7 @@ interface InfoTextParams {
 const viewer = new ImagesViewer({
   images: ['image1.jpg'],
   onInfo: (data: InfoTextParams): string => {
-    const title = typeof data.image === 'object' ? data.image.title : data.metadata.name;
+    const title = typeof data.data === 'object' ? data.data.title : data.metadata.name;
     return `
       <div class="custom-info">
         <p>${title}</p>

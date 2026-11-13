@@ -82,15 +82,21 @@ const viewer = new ImagesViewer({
 
 ## 缓存管理
 
-通过缓存管理优化性能：
+通过 LRU 缓存管理优化缩略图性能：
 
 ```javascript
 const viewer = new ImagesViewer({
   images: ['image1.jpg', 'image2.jpg', 'image3.jpg', 'image4.jpg', 'image5.jpg'],
-  maxCacheSize: 20, // 缓存中最多 20 张图片
+  maxCacheSize: 20, // 缩略图 LRU 缓存最多 20 张
   preloadCount: 5, // 预加载 5 张相邻图片
 });
 ```
+
+**LRU 缓存策略：**
+- 缩略图使用 LRU（Least Recently Used）缓存管理
+- 当缓存数量超过 `maxCacheSize` 时，自动淘汰最久未使用的缩略图
+- 已访问的缩略图会被标记为最近使用，延长保留时间
+- 配合虚拟列表使用，确保内存占用可控
 
 ## 自定义按钮
 
@@ -218,6 +224,23 @@ export class ImageViewerComponent {
 
 ## 性能优化
 
+### 虚拟列表
+
+ImagesViewer 使用虚拟列表技术优化缩略图渲染。无论有多少图片，只有可见区域内的缩略图会被渲染到 DOM 中，大幅提升滚动性能。
+
+```javascript
+const viewer = new ImagesViewer({
+  images: largeImageArray, // 即使有上千张图片也能流畅滚动
+  maxCacheSize: 30, // LRU 缓存大小，控制内存中保留的缩略图数量
+});
+```
+
+**虚拟列表特性：**
+- 仅渲染可视区域内的缩略图，减少 DOM 节点数量
+- 滚动时动态创建和销毁缩略图元素
+- 使用 LRU（最近最少使用）缓存策略管理已加载的缩略图
+- 当缓存超过 `maxCacheSize` 时自动淘汰最久未使用的缩略图
+
 ### 懒加载
 
 ImagesViewer 自动为图片实现懒加载，但您可以进一步优化：
@@ -241,7 +264,8 @@ const viewer = new ImagesViewer({
     thumbItemWidth: '60px', // 更小的缩略图
     thumbItemHeight: '40px',
     thumbMaxWidth: '60%' // 限制缩略图容器宽度
-  }
+  },
+  maxCacheSize: 20 // 缩略图 LRU 缓存大小
 });
 ```
 

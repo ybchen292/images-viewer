@@ -203,7 +203,7 @@ Number of adjacent images to preload.
 **Type:** `number`
 **Default:** `30`
 
-Maximum number of images to keep in cache.
+Maximum capacity of the thumbnail virtual list LRU cache. When the cache exceeds this limit, the least recently used thumbnails are automatically evicted.
 
 ### `minScale`
 
